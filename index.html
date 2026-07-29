@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#061d3c">
   <meta name="description" content="Peter Ham, BSN, RN — practical experience, practical solutions.">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/peterhamrn-logo.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
   <title>Peter Ham, BSN, RN</title>
   <style>
     :root {
@@ -51,17 +55,15 @@
       text-decoration: none;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
     .brand b { color: #4095ff; }
-    .shield {
+    .brand-logo {
       width: 38px;
       height: 44px;
-      border: 2px solid #fff;
-      border-radius: 18px 18px 22px 22px;
-      display: grid;
-      place-items: center;
-      font-size: 18px;
+      object-fit: contain;
+      display: block;
+      flex: 0 0 auto;
     }
     .links { display: flex; gap: 30px; }
     .links a { text-decoration: none; color: #fff; font-weight: 600; }
@@ -244,6 +246,7 @@
 
     @media (max-width: 520px) {
       .brand { font-size: 19px; }
+      .brand-logo { width: 32px; height: 38px; }
       .links a:nth-child(2), .links a:nth-child(3) { display: none; }
       .card { grid-template-columns: 1fr; }
       .app-icon { width: 100%; height: auto; aspect-ratio: 1 / 1; max-height: 260px; }
@@ -258,7 +261,7 @@
   <header>
     <div class="wrap">
       <nav>
-        <a class="brand" href="#top"><span class="shield">⌁</span>PeterHamRN<b>.com</b></a>
+        <a class="brand" href="#top"><img class="brand-logo" src="/peterhamrn-logo.svg" alt="">PeterHamRN<b>.com</b></a>
         <div class="links">
           <a href="#top">Home</a>
           <a href="#projects">Projects</a>
