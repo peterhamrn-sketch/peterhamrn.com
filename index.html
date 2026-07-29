@@ -163,12 +163,9 @@
       width: 138px;
       height: 138px;
       border-radius: 22px;
-      background: linear-gradient(145deg, #0b68c8, #063b83);
-      display: grid;
-      place-items: center;
-      color: #fff;
-      font-size: 54px;
-      font-weight: 900;
+      object-fit: cover;
+      display: block;
+      box-shadow: 0 4px 12px rgba(8,35,71,.18);
     }
     .card h3 { font-size: 24px; margin: 0 0 7px; }
     .card p, .card li { color: #263952; line-height: 1.45; }
@@ -249,7 +246,7 @@
       .brand { font-size: 19px; }
       .links a:nth-child(2), .links a:nth-child(3) { display: none; }
       .card { grid-template-columns: 1fr; }
-      .app-icon { width: 100%; height: 120px; }
+      .app-icon { width: 100%; height: auto; aspect-ratio: 1 / 1; max-height: 260px; }
       .quick { grid-template-columns: 1fr; }
       .quick article { border-right: 0; }
       .timeline { grid-template-columns: 1fr 1fr; }
@@ -293,7 +290,7 @@
         <h2>Featured Applications</h2>
         <div class="cards">
           <article class="card">
-            <div class="app-icon">ASM</div>
+            <img class="app-icon" src="images/asm-instructor-icon.jpg" alt="ASM Instructor application icon">
             <div>
               <h3>ASM Instructor</h3>
               <p>A practical class-management application built for Accident Scene Management instructors.</p>
@@ -307,7 +304,7 @@
           </article>
 
           <article class="card">
-            <div class="app-icon">BP</div>
+            <img class="app-icon" src="images/bp-cuff-compare-icon.jpg" alt="BP Cuff Compare application icon">
             <div>
               <h3>BP Cuff Compare</h3>
               <p>A focused tool for comparing simultaneous blood-pressure readings from two devices.</p>
