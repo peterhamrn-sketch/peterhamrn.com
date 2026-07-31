@@ -1,1 +1,123 @@
-(()=>{const c=window.BRISKET_CONFIG||{},r=document.querySelector('#rsvp-button'),l=document.querySelector('#potluck-list'),s=document.querySelector('#potluck-status'),f=document.querySelector('#refresh-potluck'),img=document.querySelector('#invitation-image'),input=document.querySelector('#photo-input'),label=document.querySelector('#upload-label'),view=document.querySelector('#view-gallery'),gallery=document.querySelector('#gallery'),photoStatus=document.querySelector('#photo-status');img.addEventListener('load',()=>{img.hidden=false});img.addEventListener('error',()=>{img.hidden=true});if(c.rsvpUrl){r.href=c.rsvpUrl;r.target='_blank';r.rel='noopener'}else r.addEventListener('click',e=>{e.preventDefault();alert('The RSVP link is being connected.')});function render(items){l.replaceChildren();items.filter(x=>x&&x.name&&x.item).forEach(x=>{const li=document.createElement('li'),n=document.createElement('strong'),d=document.createElement('span');n.textContent=x.name;d.textContent=x.item;li.append(n,d);l.append(li)})}function parseCsv(text){const rows=[];let row=[],cell='',quoted=false;for(let i=0;i<text.length;i++){const ch=text[i],next=text[i+1];if(ch==='"'){if(quoted&&next==='"'){cell+='"';i++}else quoted=!quoted}else if(ch===','&&!quoted){row.push(cell.trim());cell=''}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&next==='\n')i++;row.push(cell.trim());cell='';if(row.some(Boolean))rows.push(row);row=[]}else cell+=ch}row.push(cell.trim());if(row.some(Boolean))rows.push(row);return rows.slice(1).map(cols=>({name:cols[0]||'',item:cols[1]||''})).filter(x=>x.name&&x.item)}async function loadPotluck(){s.textContent='Updating…';try{if(!c.potluckEndpoint)throw new Error('No endpoint');const res=await fetch(c.potluckEndpoint,{cache:'no-store'});if(!res.ok)throw new Error(String(res.status));const items=c.potluckFormat==='csv'?parseCsv(await res.text()):await res.json();render(items);s.textContent='Updated just now.'}catch{render(c.fallbackPotluck||[]);s.textContent='Showing the latest saved list.'}}async function loadGallery(){gallery.hidden=false;gallery.style.display='grid';gallery.replaceChildren();photoStatus.textContent='Loading photos…';try{if(!c.photoListEndpoint)throw new Error('No gallery endpoint');const res=await fetch(c.photoListEndpoint,{cache:'no-store'});if(!res.ok)throw new Error(String(res.status));const photos=await res.json();photos.forEach(p=>{const i=document.createElement('img');i.src=p.url;i.alt=p.alt||'Cookout photo';i.loading='lazy';gallery.append(i)});photoStatus.textContent=photos.length?'':'No photos have been uploaded yet.'}catch{photoStatus.textContent='The shared gallery will appear here once photo storage is connected.'}}async function upload(files){if(!c.photoUploadEndpoint||!files.length)return;photoStatus.textContent=`Uploading ${files.length} photo${files.length===1?'':'s'}…`;try{for(const file of files){const body=new FormData();body.append('photo',file);body.append('event','brisket-2026');const res=await fetch(c.photoUploadEndpoint,{method:'POST',body});if(!res.ok)throw new Error(String(res.status))}photoStatus.textContent='Upload complete.';await loadGallery()}catch{photoStatus.textContent='The upload did not complete. Please try again.'}}if(c.photoUploadEndpoint){input.disabled=false;label.classList.remove('disabled');label.removeAttribute('aria-disabled');input.addEventListener('change',()=>upload([...input.files]))}f.addEventListener('click',loadPotluck);view.addEventListener('click',loadGallery);loadPotluck()})();
+(() => {
+  const config = window.BRISKET_CONFIG || {};
+  const rsvpButton = document.querySelector('#rsvp-button');
+  const potluckList = document.querySelector('#potluck-list');
+  const potluckStatus = document.querySelector('#potluck-status');
+  const refreshPotluck = document.querySelector('#refresh-potluck');
+  const invitationImage = document.querySelector('#invitation-image');
+
+  if (invitationImage) {
+    const showImage = () => {
+      invitationImage.hidden = false;
+      invitationImage.classList.remove('is-broken');
+    };
+
+    const hideBrokenImage = () => {
+      invitationImage.hidden = true;
+      invitationImage.classList.add('is-broken');
+    };
+
+    invitationImage.addEventListener('load', showImage);
+    invitationImage.addEventListener('error', hideBrokenImage);
+
+    // The image may finish loading before this script runs, especially from cache.
+    if (invitationImage.complete) {
+      if (invitationImage.naturalWidth > 0) showImage();
+      else hideBrokenImage();
+    }
+  }
+
+  if (rsvpButton) {
+    if (config.rsvpUrl) {
+      rsvpButton.href = config.rsvpUrl;
+      rsvpButton.target = '_blank';
+      rsvpButton.rel = 'noopener';
+    } else {
+      rsvpButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        alert('The RSVP link is being connected.');
+      });
+    }
+  }
+
+  function renderPotluck(items) {
+    if (!potluckList) return;
+    potluckList.replaceChildren();
+
+    items
+      .filter((item) => item && item.name && item.item)
+      .forEach((item) => {
+        const row = document.createElement('li');
+        const name = document.createElement('strong');
+        const contribution = document.createElement('span');
+        name.textContent = item.name;
+        contribution.textContent = item.item;
+        row.append(name, contribution);
+        potluckList.append(row);
+      });
+  }
+
+  function parseCsv(text) {
+    const rows = [];
+    let row = [];
+    let cell = '';
+    let quoted = false;
+
+    for (let index = 0; index < text.length; index += 1) {
+      const character = text[index];
+      const nextCharacter = text[index + 1];
+
+      if (character === '"') {
+        if (quoted && nextCharacter === '"') {
+          cell += '"';
+          index += 1;
+        } else {
+          quoted = !quoted;
+        }
+      } else if (character === ',' && !quoted) {
+        row.push(cell.trim());
+        cell = '';
+      } else if ((character === '\n' || character === '\r') && !quoted) {
+        if (character === '\r' && nextCharacter === '\n') index += 1;
+        row.push(cell.trim());
+        cell = '';
+        if (row.some(Boolean)) rows.push(row);
+        row = [];
+      } else {
+        cell += character;
+      }
+    }
+
+    row.push(cell.trim());
+    if (row.some(Boolean)) rows.push(row);
+
+    return rows
+      .slice(1)
+      .map((columns) => ({ name: columns[0] || '', item: columns[1] || '' }))
+      .filter((item) => item.name && item.item);
+  }
+
+  async function loadPotluck() {
+    if (!potluckStatus) return;
+    potluckStatus.textContent = 'Updating…';
+
+    try {
+      if (!config.potluckEndpoint) throw new Error('No endpoint configured');
+      const response = await fetch(config.potluckEndpoint, { cache: 'no-store' });
+      if (!response.ok) throw new Error(String(response.status));
+
+      const items = config.potluckFormat === 'csv'
+        ? parseCsv(await response.text())
+        : await response.json();
+
+      renderPotluck(items);
+      potluckStatus.textContent = 'Updated just now.';
+    } catch {
+      renderPotluck(config.fallbackPotluck || []);
+      potluckStatus.textContent = 'Showing the latest saved list.';
+    }
+  }
+
+  if (refreshPotluck) refreshPotluck.addEventListener('click', loadPotluck);
+  loadPotluck();
+})();
