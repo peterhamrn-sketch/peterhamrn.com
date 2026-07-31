@@ -1,0 +1,1 @@
+window.BRISKET_CONFIG={rsvpUrl:"",potluckEndpoint:"",photoListEndpoint:"",photoUploadEndpoint:"",fallbackPotluck:[{name:"Peter & Cheryl",item:"Brisket"},{name:"Tamara & Joe",item:"Chili dip"},{name:"Chris & Tim",item:"Green bean casserole"},{name:"John, Lanna & Warinrat",item:"Thai salad"}]};
