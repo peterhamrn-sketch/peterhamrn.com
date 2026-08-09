@@ -44,7 +44,7 @@
     .button.primary{background:var(--blue);color:#fff}
     .button.secondary{border:1px solid var(--blue);color:#0b62bf;background:#fff}
     .flyer{display:flex;flex-direction:column;align-items:stretch;gap:10px}
-    .flyer-preview{width:100%;aspect-ratio:4/5;object-fit:cover;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+    .flyer-preview{display:block;width:100%;height:auto;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
     .flyer-preview[hidden]{display:none}
     footer{background:var(--navy);color:#fff;padding:30px 0 14px}
     .footgrid{display:grid;grid-template-columns:1.2fr 1fr;gap:28px}
@@ -137,7 +137,9 @@
         if (typeof item.location !== 'string' || !item.location.trim()) return null;
         item.registrationLink = safeHttpsUrl(item.registrationLink);
         if (!item.registrationLink) return null;
-        if (typeof item.publicDescription !== 'string' || !item.publicDescription.trim()) return null;
+        if (item.publicDescription == null) item.publicDescription = '';
+        if (typeof item.publicDescription !== 'string') return null;
+        item.publicDescription = item.publicDescription.trim();
         item.flyerUrl = safeHttpsUrl(item.flyerUrl);
         return item;
       }
@@ -191,7 +193,8 @@
           meta('Time', `${formatTime(item.startTime)}${item.endTime ? ` – ${formatTime(item.endTime)}` : ''}`, 'time'),
           meta('Location', item.location, 'location')
         );
-        content.append(metadata, textElement('p', 'description', item.publicDescription, 'publicDescription'));
+        content.append(metadata);
+        if (item.publicDescription) content.append(textElement('p', 'description', item.publicDescription, 'publicDescription'));
 
         const actions = document.createElement('div');
         actions.className = 'actions';
