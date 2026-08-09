@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#061d3c">
+  <meta name="description" content="Upcoming Accident Scene Management classes published by Peter Ham, BSN, RN.">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/peterhamrn-logo.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <title>Upcoming Classes | PeterHamRN.com</title>
+  <style>
+    :root{--navy:#061d3c;--navy2:#0b3b74;--blue:#1976ed;--ink:#0d2042;--muted:#526174;--line:#dce3ed;--soft:#f4f7fb;--danger:#8f2424}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
+    a{color:inherit}
+    .wrap{width:min(1120px,calc(100% - 34px));margin:auto}
+    header{height:70px;background:var(--navy);color:#fff;display:flex;align-items:center}
+    nav{display:flex;justify-content:space-between;align-items:center;width:100%}
+    .brand{font-size:24px;font-weight:850;text-decoration:none;display:flex;align-items:center;gap:10px}
+    .brand b{color:#4095ff}
+    .brand-logo{width:38px;height:44px;object-fit:contain;display:block}
+    .back{text-decoration:none;color:#fff;font-weight:650}
+    .hero{background:radial-gradient(circle at 16% 35%,rgba(41,139,255,.35),transparent 24%),linear-gradient(110deg,var(--navy),var(--navy2) 64%,#082b59);color:#fff;padding:58px 0}
+    .eyebrow{font-size:14px;text-transform:uppercase;letter-spacing:.16em;color:#a9d0ff;font-weight:800;margin:0 0 10px}
+    h1{font-size:clamp(42px,7vw,68px);line-height:.98;letter-spacing:-.045em;margin:0 0 15px}
+    .lead{font-size:19px;line-height:1.55;max-width:760px;color:#edf5ff;margin:0}
+    main{min-height:54vh}
+    .classes-section{padding:42px 0 54px;background:linear-gradient(#fff,#f6f8fc)}
+    .status{border:1px solid var(--line);border-radius:14px;padding:20px;background:#fff;color:var(--muted);box-shadow:0 7px 22px rgba(8,35,71,.08)}
+    .status.error{border-color:#e1b7b7;color:var(--danger)}
+    .class-list{display:grid;gap:22px}
+    .class-card{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:26px;padding:26px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 7px 22px rgba(8,35,71,.09)}
+    .class-card.no-flyer{grid-template-columns:1fr}
+    .class-card h2{font-size:clamp(25px,4vw,34px);line-height:1.15;margin:0 0 15px;color:var(--navy)}
+    .class-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+    .meta-item{padding:12px;border-radius:11px;background:var(--soft)}
+    .meta-label{display:block;margin-bottom:4px;color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+    .meta-value{font-weight:750;line-height:1.4}
+    .description{margin:0;color:#344861;font-size:16px;line-height:1.65;white-space:pre-line}
+    .actions{display:flex;flex-wrap:wrap;gap:11px;margin-top:22px}
+    .button{display:inline-flex;min-height:46px;align-items:center;justify-content:center;padding:11px 18px;border-radius:10px;font-weight:800;text-decoration:none}
+    .button.primary{background:var(--blue);color:#fff}
+    .button.secondary{border:1px solid var(--blue);color:#0b62bf;background:#fff}
+    .flyer{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+    .flyer-preview{width:100%;aspect-ratio:4/5;object-fit:cover;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
+    .flyer-preview[hidden]{display:none}
+    footer{background:var(--navy);color:#fff;padding:30px 0 14px}
+    .footgrid{display:grid;grid-template-columns:1.2fr 1fr;gap:28px}
+    footer h3{margin:0 0 9px}
+    footer p,footer a{color:#d5e5f7;font-size:14px;line-height:1.6;text-decoration:none}
+    .copyright{text-align:center;border-top:1px solid rgba(255,255,255,.18);margin-top:22px;padding-top:12px;color:#c9d8eb;font-size:13px}
+    @media(max-width:760px){.class-card{grid-template-columns:1fr}.class-meta{grid-template-columns:1fr}.flyer{max-width:420px}.footgrid{grid-template-columns:1fr}}
+    @media(max-width:520px){.brand{font-size:19px}.brand-logo{width:32px;height:38px}.back{font-size:14px}.hero{padding:42px 0}.class-card{padding:19px}.actions{flex-direction:column}.button{width:100%}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <nav aria-label="Classes page navigation">
+        <a class="brand" href="/"><img class="brand-logo" src="/peterhamrn-logo.svg" alt="">PeterHamRN<b>.com</b></a>
+        <a class="back" href="/">Back to Home</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow">Accident Scene Management</p>
+        <h1>Upcoming Classes</h1>
+        <p class="lead">View public class announcements, details, and registration information published by Peter Ham, BSN, RN.</p>
+      </div>
+    </section>
+
+    <section class="classes-section" aria-label="Published classes">
+      <div class="wrap">
+        <div id="classes-status" class="status" role="status">Loading upcoming classes…</div>
+        <div id="class-list" class="class-list" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footgrid">
+        <div><h3>PeterHamRN.com</h3><p>Practical Experience.<br>Practical Solutions.</p></div>
+        <div><h3>Contact</h3><p><a href="mailto:support@PeterHamRN.com">support@PeterHamRN.com</a><br>South Carolina</p></div>
+      </div>
+      <div class="copyright">© 2026 Peter Ham, BSN, RN. All rights reserved. · <a href="mailto:webmaster@PeterHamRN.com">Webmaster</a></div>
+    </div>
+  </footer>
+
+  <script>
+    (() => {
+      'use strict';
+      const FEED_URL = 'https://test.asm.peterhamrn.com/api/public/classes';
+      const status = document.getElementById('classes-status');
+      const list = document.getElementById('class-list');
+      const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+      const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+      function safeHttpsUrl(value) {
+        try {
+          const url = new URL(String(value || ''));
+          return url.protocol === 'https:' && !url.username && !url.password ? url.href : '';
+        } catch (_) { return ''; }
+      }
+
+      function validDate(value) {
+        const match = datePattern.exec(value);
+        if (!match) return false;
+        const date = new Date(`${value}T12:00:00Z`);
+        return date.getUTCFullYear() === Number(match[1]) && date.getUTCMonth() + 1 === Number(match[2]) && date.getUTCDate() === Number(match[3]);
+      }
+
+      function publicProjection(source) {
+        if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
+        const item = {
+          publicId: source.publicId,
+          classType: source.classType,
+          date: source.date,
+          startTime: source.startTime,
+          endTime: source.endTime,
+          location: source.location,
+          registrationLink: source.registrationLink,
+          publicDescription: source.publicDescription,
+          flyerUrl: source.flyerUrl
+        };
+        if (typeof item.publicId !== 'string' || !item.publicId.trim()) return null;
+        if (typeof item.classType !== 'string' || !item.classType.trim()) return null;
+        if (typeof item.date !== 'string' || !validDate(item.date)) return null;
+        if (typeof item.startTime !== 'string' || !timePattern.test(item.startTime)) return null;
+        if (item.endTime !== '' && (typeof item.endTime !== 'string' || !timePattern.test(item.endTime))) return null;
+        if (item.endTime && item.endTime <= item.startTime) return null;
+        if (typeof item.location !== 'string' || !item.location.trim()) return null;
+        item.registrationLink = safeHttpsUrl(item.registrationLink);
+        if (!item.registrationLink) return null;
+        if (typeof item.publicDescription !== 'string' || !item.publicDescription.trim()) return null;
+        item.flyerUrl = safeHttpsUrl(item.flyerUrl);
+        return item;
+      }
+
+      function formatDate(value) {
+        return new Intl.DateTimeFormat('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }).format(new Date(`${value}T12:00:00`));
+      }
+
+      function formatTime(value) {
+        const [hour, minute] = value.split(':').map(Number);
+        return new Intl.DateTimeFormat('en-US', { hour:'numeric', minute:'2-digit' }).format(new Date(2000, 0, 1, hour, minute));
+      }
+
+      function textElement(tag, className, value, field) {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (field) element.dataset.publicField = field;
+        element.textContent = value;
+        return element;
+      }
+
+      function meta(label, value, field) {
+        const item = document.createElement('div');
+        item.className = 'meta-item';
+        item.append(textElement('span', 'meta-label', label), textElement('span', 'meta-value', value, field));
+        return item;
+      }
+
+      function externalLink(className, label, url, field) {
+        const anchor = document.createElement('a');
+        anchor.className = className;
+        anchor.href = url;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.dataset.publicField = field;
+        anchor.textContent = label;
+        return anchor;
+      }
+
+      function renderClass(item) {
+        const card = document.createElement('article');
+        card.className = `class-card${item.flyerUrl ? '' : ' no-flyer'}`;
+        card.dataset.publicId = item.publicId;
+
+        const content = document.createElement('div');
+        content.append(textElement('h2', '', item.classType, 'classType'));
+        const metadata = document.createElement('div');
+        metadata.className = 'class-meta';
+        metadata.append(
+          meta('Date', formatDate(item.date), 'date'),
+          meta('Time', `${formatTime(item.startTime)}${item.endTime ? ` – ${formatTime(item.endTime)}` : ''}`, 'time'),
+          meta('Location', item.location, 'location')
+        );
+        content.append(metadata, textElement('p', 'description', item.publicDescription, 'publicDescription'));
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        actions.append(externalLink('button primary', 'Registration & Details', item.registrationLink, 'registrationLink'));
+        if (item.flyerUrl) actions.append(externalLink('button secondary', 'View Flyer', item.flyerUrl, 'flyerUrl'));
+        content.append(actions);
+        card.append(content);
+
+        if (item.flyerUrl) {
+          const flyer = document.createElement('div');
+          flyer.className = 'flyer';
+          const image = document.createElement('img');
+          image.className = 'flyer-preview';
+          image.src = item.flyerUrl;
+          image.alt = `Class flyer for ${item.classType}`;
+          image.loading = 'lazy';
+          image.dataset.publicField = 'flyerUrl';
+          image.addEventListener('error', () => { image.hidden = true; });
+          flyer.append(image);
+          card.append(flyer);
+        }
+        return card;
+      }
+
+      function showMessage(message, error = false) {
+        list.hidden = true;
+        status.hidden = false;
+        status.classList.toggle('error', error);
+        status.textContent = message;
+      }
+
+      async function loadClasses() {
+        try {
+          const response = await fetch(FEED_URL, { headers:{ Accept:'application/json' } });
+          if (!response.ok) throw new Error('Feed request failed.');
+          const snapshot = await response.json();
+          if (!snapshot || snapshot.schemaVersion !== 1 || !Array.isArray(snapshot.classes)) throw new Error('Unsupported feed.');
+          const classes = snapshot.classes.map(publicProjection).filter(Boolean).sort((a, b) => `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`));
+          if (!classes.length) {
+            showMessage('No upcoming classes are currently published. Please check back soon.');
+            return;
+          }
+          list.replaceChildren(...classes.map(renderClass));
+          status.hidden = true;
+          list.hidden = false;
+        } catch (_) {
+          showMessage('Upcoming class information is temporarily unavailable. Please try again later or contact Peter for current class information.', true);
+        }
+      }
+
+      loadClasses();
+    })();
+  </script>
+</body>
+</html>
