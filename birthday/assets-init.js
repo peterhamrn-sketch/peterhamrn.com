@@ -1,0 +1,1 @@
+document.getElementById('card').src='data:image/png;base64,'+window.IMG_B64.join('');document.getElementById('song').src='data:audio/wav;base64,'+window.AUD_B64.join('');
