@@ -73,7 +73,8 @@
     footer p,footer a{color:#d5e5f7;font-size:14px;line-height:1.6;text-decoration:none}
     .copyright{text-align:center;border-top:1px solid rgba(255,255,255,.18);margin-top:22px;padding-top:12px;color:#c9d8eb;font-size:13px}
     @media(max-width:850px){.hero-grid{grid-template-columns:160px 1fr}.app-icon{width:150px;height:150px;border-radius:28px}.feature-grid{grid-template-columns:1fr 1fr}.steps{grid-template-columns:repeat(4,1fr)}.built{grid-template-columns:1fr}.footgrid{grid-template-columns:1fr 1fr}}
-    @media(max-width:560px){.brand{font-size:19px}.brand-logo{width:32px;height:38px}.links a:nth-child(2){display:none}.hero{padding:36px 0}.hero-grid{grid-template-columns:1fr;text-align:center}.app-icon{width:150px;height:150px;margin:auto}.lead{font-size:17px}.status{margin-left:auto;margin-right:auto}.feature-grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.footgrid{grid-template-columns:1fr}.actions{flex-direction:column}.button{width:100%}}
+    body{overflow-x:hidden}header{height:auto;min-height:70px}nav{min-height:70px}.brand{white-space:nowrap}.menu-toggle,.mobile-menu{display:none}.menu-toggle{width:48px;height:48px;padding:12px;border:1px solid rgba(255,255,255,.35);border-radius:10px;background:transparent;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:5px}.menu-toggle span{display:block;width:23px;height:2px;background:currentColor;border-radius:2px}.mobile-menu{padding:2px 0 14px;border-top:1px solid rgba(255,255,255,.18)}.mobile-menu a{display:block;padding:12px 4px;color:#fff;text-decoration:none;font-weight:650}@media(max-width:850px){.links{display:none}.menu-toggle{display:flex}.mobile-menu.open{display:block}}
+    @media(max-width:560px){.brand{font-size:19px}.brand-logo{width:32px;height:38px}.hero{padding:36px 0}.hero-grid{grid-template-columns:1fr;text-align:center}.app-icon{width:150px;height:150px;margin:auto}.lead{font-size:17px}.status{margin-left:auto;margin-right:auto}.feature-grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.footgrid{grid-template-columns:1fr}.actions{flex-direction:column}.button{width:100%}}
   </style>
 </head>
 <body>
@@ -85,8 +86,9 @@
           <a href="/">Home</a>
           <a href="/#projects">Projects</a>
           <a href="mailto:support@PeterHamRN.com">Contact</a>
-        </div>
+        </div><button class="menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-navigation"><span></span><span></span><span></span></button>
       </nav>
+      <div class="mobile-menu" id="mobile-navigation"><a href="/#top">Home</a><a href="/#projects">Projects</a><a href="/apps-automations.html">Apps</a><a href="/#journey">Journey</a><a href="/resources.html">Resources</a><a href="/classes/">Classes</a><a href="mailto:support@PeterHamRN.com">Contact</a></div>
     </div>
   </header>
 
@@ -175,5 +177,5 @@
       <div class="copyright">© 2026 Peter Ham, BSN, RN. All rights reserved. · <a href="mailto:webmaster@peterhamrn.com">Webmaster</a></div>
     </div>
   </footer>
-</body>
+<script>(()=>{const button=document.querySelector('.menu-toggle');const menu=document.getElementById('mobile-navigation');if(!button||!menu)return;const setOpen=open=>{menu.classList.toggle('open',open);button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',open?'Close navigation menu':'Open navigation menu')};button.addEventListener('click',()=>setOpen(button.getAttribute('aria-expanded')!=='true'));menu.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>setOpen(false)));document.addEventListener('keydown',event=>{if(event.key==='Escape')setOpen(false)});window.addEventListener('resize',()=>{if(window.innerWidth>850)setOpen(false)})})();</script></body>
 </html>
