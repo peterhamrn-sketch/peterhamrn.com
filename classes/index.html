@@ -43,6 +43,12 @@
     .button{display:inline-flex;min-height:46px;align-items:center;justify-content:center;padding:11px 18px;border-radius:10px;font-weight:800;text-decoration:none}
     .button.primary{background:var(--blue);color:#fff}
     .button.secondary{border:1px solid var(--blue);color:#0b62bf;background:#fff}
+    .calendar-menu{position:relative}
+    .calendar-menu summary{list-style:none;cursor:pointer}
+    .calendar-menu summary::-webkit-details-marker{display:none}
+    .calendar-choices{position:absolute;z-index:2;left:0;top:calc(100% + 7px);min-width:210px;padding:8px;border:1px solid var(--line);border-radius:11px;background:#fff;box-shadow:0 10px 28px rgba(8,35,71,.18)}
+    .calendar-choices a{display:block;padding:10px;border-radius:8px;text-decoration:none;font-weight:750}
+    .calendar-choices a:focus,.calendar-choices a:hover{background:var(--soft)}
     .flyer{display:flex;flex-direction:column;align-items:stretch;gap:10px}
     .flyer-preview{display:block;width:100%;height:auto;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:var(--soft)}
     .flyer-preview[hidden]{display:none}
@@ -52,7 +58,7 @@
     footer p,footer a{color:#d5e5f7;font-size:14px;line-height:1.6;text-decoration:none}
     .copyright{text-align:center;border-top:1px solid rgba(255,255,255,.18);margin-top:22px;padding-top:12px;color:#c9d8eb;font-size:13px}
     @media(max-width:760px){.class-card{grid-template-columns:1fr}.class-meta{grid-template-columns:1fr}.flyer{max-width:420px}.footgrid{grid-template-columns:1fr}}
-    @media(max-width:520px){.brand{font-size:19px}.brand-logo{width:32px;height:38px}.back{font-size:14px}.hero{padding:42px 0}.class-card{padding:19px}.actions{flex-direction:column}.button{width:100%}}
+    @media(max-width:520px){.brand{font-size:19px}.brand-logo{width:32px;height:38px}.back{font-size:14px}.hero{padding:42px 0}.class-card{padding:19px}.actions{flex-direction:column}.button,.calendar-menu{width:100%}.calendar-choices{position:static;width:100%;margin-top:7px}}
   </style>
 </head>
 <body>
@@ -179,6 +185,34 @@
         return anchor;
       }
 
+      function googleCalendarUrl(item) {
+        const compact = value => value.replaceAll('-', '');
+        const nextDate = value => { const date = new Date(`${value}T12:00:00Z`); date.setUTCDate(date.getUTCDate() + 1); return date.toISOString().slice(0, 10); };
+        const timed = timePattern.test(item.startTime || '') && (!item.endTime || timePattern.test(item.endTime));
+        const dates = timed
+          ? `${compact(item.date)}T${item.startTime.replace(':', '')}00/${compact(item.date)}T${(item.endTime || item.startTime).replace(':', '')}00`
+          : `${compact(item.date)}/${compact(nextDate(item.date))}`;
+        const details = [item.publicDescription, item.registrationLink].filter(Boolean).join('\n\n');
+        const url = new URL('https://calendar.google.com/calendar/render');
+        url.search = new URLSearchParams({ action:'TEMPLATE', text:item.classType, dates, ctz:'America/New_York', location:item.location, details }).toString();
+        return url.href;
+      }
+
+      function calendarMenu(item) {
+        const menu = document.createElement('details');
+        menu.className = 'calendar-menu';
+        const summary = textElement('summary', 'button secondary', 'Add to Calendar');
+        summary.setAttribute('aria-label', `Add ${item.classType} to a calendar`);
+        const choices = document.createElement('div');
+        choices.className = 'calendar-choices';
+        choices.append(
+          externalLink('', 'Google Calendar', googleCalendarUrl(item), 'calendarGoogle'),
+          externalLink('', 'Calendar File (.ics)', `/api/public/class-calendar?publication=${encodeURIComponent(item.publicId)}`, 'calendarIcs')
+        );
+        menu.append(summary, choices);
+        return menu;
+      }
+
       function renderClass(item) {
         const card = document.createElement('article');
         card.className = `class-card${item.flyerUrl ? '' : ' no-flyer'}`;
@@ -200,6 +234,7 @@
         actions.className = 'actions';
         actions.append(externalLink('button primary', 'Registration & Details', item.registrationLink, 'registrationLink'));
         if (item.flyerUrl) actions.append(externalLink('button secondary', 'View Flyer', item.flyerUrl, 'flyerUrl'));
+        actions.append(calendarMenu(item));
         content.append(actions);
         card.append(content);
 
