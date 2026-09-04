@@ -26,8 +26,8 @@
     },
     advanced: {
       href:'https://roadguardians.org/',
-      src:'',
-      alt:'',
+      src:'/images/class-resources/asm-basic-banner.png',
+      alt:'Road Guardians and Basic ASM',
       placeholder:'Approved Advanced banner asset pending'
     }
   };
