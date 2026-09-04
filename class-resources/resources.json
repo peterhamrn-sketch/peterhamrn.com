@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "common": [
+    {"id":"classes","title":"Classes with Peter & Tamara","description":"See all upcoming classes and clinics","url":"https://peterhamrn.com/classes/"},
+    {"id":"share","title":"Share With a Friend","description":"Invite a friend to take a class","url":"https://peterhamrn.com/classes/"},
+    {"id":"contact","title":"Contact Peter","description":"Get in touch with Peter directly","url":"https://peterhamrn.com/#projects"},
+    {"id":"resources","title":"Resources","description":"Helpful resources for riders","url":"https://peterhamrn.com/resources.html"},
+    {"id":"facebook","title":"Facebook","description":"Follow us on Facebook","url":"https://www.facebook.com/groups/953062826227905/?ref=share_group_link"},
+    {"id":"instagram","title":"Instagram","description":"Follow us on Instagram","url":"https://www.instagram.com/cl.asses105/"}
+  ],
+  "banners": {
+    "lovely":{"id":"lovely","title":"Lovely Law Firm","description":"Motorcycle accident resources from Lovely Law Firm","url":"https://www.justiceislovely.com/myrtle-beach-motorcycle-accident-lawyer-near-you/"},
+    "basic":{"id":"road-guardians-basic","title":"Road Guardians and Basic ASM","description":"Learn more about Accident Scene Management and Road Guardians","url":"https://roadguardians.org/"},
+    "advanced":{"id":"road-guardians-advanced","title":"Road Guardians and Advanced ASM","description":"Continue your Accident Scene Management training with Road Guardians","url":"https://roadguardians.org/"}
+  },
+  "courses": {
+    "basic":{"pageTitle":"Thanks for completing your ASM Basic Class!","emailSubject":"Your ASM Basic class resources","emailIntroduction":"Here are the helpful resources from your completed ASM Basic class."},
+    "advanced":{"pageTitle":"Thanks for completing your ASM Advanced Class!","emailSubject":"Your ASM Advanced class resources","emailIntroduction":"Here are the helpful resources from your completed ASM Advanced class."}
+  }
+}

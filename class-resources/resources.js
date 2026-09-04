@@ -1,111 +1,79 @@
 (() => {
   'use strict';
 
-  const CLASSES_URL = 'https://peterhamrn.com/classes/';
-  const sharedCards = [
-    { title:'Classes with Peter & Tamara', subtitle:'See all upcoming classes and clinics', icon:'☰', href:'/classes/' },
-    { title:'Share With a Friend', subtitle:'Invite a friend to take a class', icon:'↗', action:'share' },
-    { title:'Contact Peter', subtitle:'Get in touch with Peter directly', icon:'✉', href:'/#projects' },
-    { title:'Resources', subtitle:'Helpful resources for riders', icon:'+', href:'/resources.html' },
-    { title:'Facebook', subtitle:'Follow us on Facebook', icon:'f', href:'https://www.facebook.com/groups/953062826227905/?ref=share_group_link', external:true },
-    { title:'Instagram', subtitle:'Follow us on Instagram', icon:'◎', href:'https://www.instagram.com/cl.asses105/', external:true }
-  ];
-
-  const bannerDefinitions = {
-    lovely: {
-      href:'https://www.justiceislovely.com/myrtle-beach-motorcycle-accident-lawyer-near-you/',
-      src:'/images/class-resources/lovely-law-firm-banner.png',
-      alt:'Lovely Law Firm',
-      placeholder:'Approved Lovely Law Firm banner asset pending'
-    },
-    basic: {
-      href:'https://roadguardians.org/',
-      src:'/images/class-resources/asm-basic-banner.png',
-      alt:'Road Guardians and Basic ASM',
-      placeholder:'Approved Basic ASM / Road Guardians banner asset pending'
-    },
-    advanced: {
-      href:'https://roadguardians.org/',
-      src:'/images/class-resources/asm-basic-banner.png',
-      alt:'Road Guardians and Basic ASM',
-      placeholder:'Approved Advanced banner asset pending'
+  const SEND_URL = 'https://test.asm.peterhamrn.com/api/student-resource/send';
+  const icons = { classes:'☰', share:'↗', contact:'✉', resources:'+', facebook:'f', instagram:'◎' };
+  const media = {
+    lovely: { src:'/images/class-resources/lovely-law-firm-banner.png', alt:'Lovely Law Firm', placeholder:'Approved Lovely Law Firm banner asset pending' },
+    basic: { src:'/images/class-resources/asm-basic-banner.png', alt:'Road Guardians and Basic ASM', placeholder:'Approved Basic ASM / Road Guardians banner asset pending' },
+    advanced: { src:'/images/class-resources/asm-basic-banner.png', alt:'Road Guardians and Basic ASM', placeholder:'Approved Advanced banner asset pending' }
+  };
+  // Emergency display-only fallback derived from the verified pre-JSON renderer.
+  // resources.json remains the sole source used by email and normal page rendering.
+  const fallback = {
+    common: [
+      { id:'classes', title:'Classes with Peter & Tamara', description:'See all upcoming classes and clinics', url:'https://peterhamrn.com/classes/' },
+      { id:'share', title:'Share With a Friend', description:'Invite a friend to take a class', url:'https://peterhamrn.com/classes/' },
+      { id:'contact', title:'Contact Peter', description:'Get in touch with Peter directly', url:'https://peterhamrn.com/#projects' },
+      { id:'resources', title:'Resources', description:'Helpful resources for riders', url:'https://peterhamrn.com/resources.html' },
+      { id:'facebook', title:'Facebook', description:'Follow us on Facebook', url:'https://www.facebook.com/groups/953062826227905/?ref=share_group_link' },
+      { id:'instagram', title:'Instagram', description:'Follow us on Instagram', url:'https://www.instagram.com/cl.asses105/' }
+    ],
+    banners: {
+      lovely: { title:'Lovely Law Firm', url:'https://www.justiceislovely.com/myrtle-beach-motorcycle-accident-lawyer-near-you/' },
+      basic: { title:'Road Guardians and Basic ASM', url:'https://roadguardians.org/' },
+      advanced: { title:'Road Guardians and Advanced ASM', url:'https://roadguardians.org/' }
     }
   };
 
-  function cardMarkup(card, index) {
-    const content = `<span class="card-icon" aria-hidden="true">${card.icon}</span><span><h2>${card.title}</h2><p>${card.subtitle}</p></span>`;
-    if (card.action === 'share') {
-      return `<div class="resource-card" data-share-card tabindex="0" role="button" aria-label="${card.title}: ${card.subtitle}">${content}<span class="share-status" data-share-status aria-live="polite"></span></div>`;
-    }
-    const target = card.external ? ' target="_blank" rel="noopener noreferrer"' : '';
-    return `<a class="resource-card" href="${card.href}"${target} data-card="${index + 1}">${content}</a>`;
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[character]));
+  const validUrl = value => { try { return new URL(value).protocol === 'https:'; } catch { return false; } };
+  const validLink = item => item && typeof item.id === 'string' && typeof item.title === 'string' && typeof item.description === 'string' && validUrl(item.url);
+  function validData(data) {
+    return data && data.schemaVersion === 1 && Array.isArray(data.common) && data.common.every(validLink) &&
+      data.banners && ['lovely','basic','advanced'].every(key => validLink(data.banners[key])) &&
+      data.courses && ['basic','advanced'].every(key => data.courses[key] && typeof data.courses[key].pageTitle === 'string' && typeof data.courses[key].emailSubject === 'string' && typeof data.courses[key].emailIntroduction === 'string');
   }
-
-  function bannerMarkup(definition, label) {
-    const media = definition.src
-      ? `<img src="${definition.src}" alt="${definition.alt}" data-banner-image><span class="banner-placeholder" data-banner-placeholder hidden>${definition.placeholder}</span>`
-      : `<span class="banner-placeholder">${definition.placeholder}</span>`;
-    return `<a class="banner-link" href="${definition.href}" target="_blank" rel="noopener noreferrer" aria-label="${label}">${media}</a>`;
+  function card(item, index) {
+    const inside = `<span class="card-icon" aria-hidden="true">${icons[item.id] || '+'}</span><span><h2>${esc(item.title)}</h2><p>${esc(item.description)}</p></span>`;
+    if (item.id === 'share') return `<div class="resource-card" data-share-card tabindex="0" role="button" aria-label="${esc(item.title)}: ${esc(item.description)}">${inside}<span class="share-status" data-share-status aria-live="polite"></span></div>`;
+    const external = !item.url.startsWith('https://peterhamrn.com/');
+    return `<a class="resource-card" href="${esc(item.url)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''} data-card="${index + 1}">${inside}</a>`;
   }
-
-  async function copyClassesUrl(status) {
+  function banner(item, kind) {
+    const image = media[kind];
+    return `<a class="banner-link" href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(item.title)}"><img src="${image.src}" alt="${image.alt}" data-banner-image><span class="banner-placeholder" data-banner-placeholder hidden>${image.placeholder}</span></a>`;
+  }
+  async function share(element, url) {
+    const status = element.querySelector('[data-share-status]');
+    if (navigator.share) { try { await navigator.share({ title:'Classes with Peter & Tamara', text:'See upcoming classes and clinics.', url }); return; } catch (error) { if (error?.name === 'AbortError') return; } }
+    try { await navigator.clipboard.writeText(url); status.textContent = 'Classes link copied.'; } catch { status.textContent = `Copy this link: ${url}`; }
+  }
+  async function send(button, note) {
+    button.disabled = true; note.textContent = 'Sending…';
     try {
-      await navigator.clipboard.writeText(CLASSES_URL);
-      status.textContent = 'Classes link copied.';
-    } catch (_) {
-      const field = document.createElement('textarea');
-      field.value = CLASSES_URL;
-      field.setAttribute('readonly', '');
-      field.style.position = 'fixed';
-      field.style.opacity = '0';
-      document.body.appendChild(field);
-      field.select();
-      const copied = document.execCommand('copy');
-      field.remove();
-      status.textContent = copied ? 'Classes link copied.' : `Copy this link: ${CLASSES_URL}`;
-    }
+      const reply = await fetch(SEND_URL, { method:'POST', credentials:'include', headers:{ 'Content-Type':'application/json' }, body:'{}' });
+      const result = await reply.json().catch(() => ({}));
+      if (!reply.ok || !result.ok) throw new Error();
+      note.textContent = result.alreadySent ? 'This information was already sent.' : 'This information was sent.';
+    } catch { button.disabled = false; note.textContent = 'Email could not be sent. Please try again.'; }
   }
-
-  async function shareClasses(card) {
-    const status = card.querySelector('[data-share-status]');
-    status.textContent = '';
-    if (navigator.share) {
-      try {
-        await navigator.share({title:'Classes with Peter & Tamara', text:'See upcoming classes and clinics.', url:CLASSES_URL});
-        return;
-      } catch (error) {
-        if (error && error.name === 'AbortError') return;
-      }
-    }
-    await copyClassesUrl(status);
-  }
-
-  function render() {
-    const course = document.body.dataset.course === 'advanced' ? 'advanced' : 'basic';
-    document.querySelector('[data-resource-cards]').innerHTML = sharedCards.map(cardMarkup).join('');
-    document.querySelector('[data-banners]').innerHTML = [
-      bannerMarkup(bannerDefinitions.lovely, 'Open the Lovely Law Firm website'),
-      bannerMarkup(bannerDefinitions[course], 'Open the Road Guardians website')
-    ].join('');
-
-    document.querySelectorAll('[data-banner-image]').forEach(image => {
-      image.addEventListener('error', () => {
-        image.hidden = true;
-        const placeholder = image.nextElementSibling;
-        if (placeholder) placeholder.hidden = false;
-      }, {once:true});
-    });
-
+  function render(data) {
+    const type = document.body.dataset.course === 'advanced' ? 'advanced' : 'basic';
+    document.querySelector('[data-resource-cards]').innerHTML = data.common.map(card).join('');
+    document.querySelector('[data-banners]').innerHTML = banner(data.banners.lovely, 'lovely') + banner(data.banners[type], type);
+    document.querySelectorAll('[data-banner-image]').forEach(image => image.addEventListener('error', () => { image.hidden = true; image.nextElementSibling.hidden = false; }, { once:true }));
+    const shareItem = data.common.find(item => item.id === 'share');
     const shareCard = document.querySelector('[data-share-card]');
-    shareCard.addEventListener('click', () => shareClasses(shareCard));
-    shareCard.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        shareClasses(shareCard);
-      }
-    });
+    shareCard.addEventListener('click', () => share(shareCard, shareItem.url));
+    shareCard.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); share(shareCard, shareItem.url); } });
+    const panel = document.querySelector('.send-panel'), button = panel.querySelector('button'), note = panel.querySelector('.send-note');
+    button.disabled = false; button.removeAttribute('aria-disabled'); note.textContent = 'Send these resources to the email on your class roster.';
+    button.addEventListener('click', () => send(button, note));
   }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render, {once:true});
-  else render();
+  async function start() {
+    try { const reply = await fetch('/class-resources/resources.json', { headers:{ accept:'application/json' } }); if (!reply.ok) throw new Error(); const data = await reply.json(); if (!validData(data)) throw new Error(); render(data); }
+    catch { render(fallback); }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once:true }); else start();
 })();
