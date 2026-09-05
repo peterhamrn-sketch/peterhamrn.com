@@ -12,15 +12,15 @@
   // resources.json remains the sole source used by email and normal page rendering.
   const fallback = {
     common: [
-      { id:'classes', title:'Classes with Peter & Tamara', description:'See all upcoming classes and clinics', url:'https://peterhamrn.com/classes/' },
-      { id:'share', title:'Share With a Friend', description:'Invite a friend to take a class', url:'https://peterhamrn.com/classes/' },
-      { id:'contact', title:'Contact Peter', description:'Get in touch with Peter directly', url:'https://peterhamrn.com/#projects' },
-      { id:'resources', title:'Resources', description:'Helpful resources for riders', url:'https://peterhamrn.com/resources.html' },
-      { id:'facebook', title:'Facebook', description:'Follow us on Facebook', url:'https://www.facebook.com/groups/953062826227905/?ref=share_group_link' },
-      { id:'instagram', title:'Instagram', description:'Follow us on Instagram', url:'https://www.instagram.com/cl.asses105/' }
+      { id:'classes', title:'Classes with Peter & Tamara', description:'See our upcoming ASM classes, clinics, and other training opportunities.', url:'https://peterhamrn.com/classes/' },
+      { id:'share', title:'Share With a Friend', description:'Know someone who should take an ASM class? Share our upcoming classes with them.', url:'https://peterhamrn.com/classes/' },
+      { id:'resources', title:'Resources', description:'Helpful motorcycle safety, emergency response, and rider resources from your class.', url:'https://peterhamrn.com/resources.html' },
+      { id:'facebook', title:'Facebook', description:'Join the SC Road Guardians–Accident Scene Management group for class updates, upcoming events, and motorcycle safety information.', url:'https://www.facebook.com/groups/953062826227905/?ref=share_group_link' },
+      { id:'instagram', title:'Instagram', description:'Follow us on Instagram for class updates, photos, events, and motorcycle safety content.', url:'https://www.instagram.com/lifesavertrainingmb/' },
+      { id:'contact', title:'Contact Peter', description:'Have a question about the class or need help afterward? Contact Peter directly.', url:'https://peterhamrn.com/#projects' }
     ],
     banners: {
-      lovely: { title:'Lovely Law Firm', url:'https://www.justiceislovely.com/myrtle-beach-motorcycle-accident-lawyer-near-you/' },
+      lovely: { title:'Lovely Law Firm', description:'Our generous sponsor helping make these ASM classes free to students. Learn more about their motorcycle accident resources.', url:'https://www.justiceislovely.com/myrtle-beach-motorcycle-accident-lawyer-near-you/' },
       basic: { title:'Road Guardians and Basic ASM', url:'https://roadguardians.org/' },
       advanced: { title:'Road Guardians and Advanced ASM', url:'https://roadguardians.org/' }
     }
