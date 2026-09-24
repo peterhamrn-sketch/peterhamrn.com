@@ -48,6 +48,12 @@
     .feature .num{width:42px;height:42px;border-radius:12px;background:#eaf3ff;color:#0b62bf;display:grid;place-items:center;font-weight:850;margin-bottom:14px}
     .feature h3{margin:0 0 8px;font-size:20px}
     .feature p{margin:0;color:#415269;line-height:1.55}
+    .feature-promo{position:relative;min-width:0}
+    .feature-promo video{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#061d3c;border-radius:8px}
+    .promo-start{position:absolute;inset:0;width:100%;border:0;border-radius:16px;background:transparent;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding:0 0 34px}
+    .promo-start span{padding:10px 20px;border-radius:999px;background:#fff;color:#0b3b74;box-shadow:0 2px 12px #0006;font:700 16px system-ui}
+    .promo-start:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+    .promo-start[hidden]{display:none}
     .workflow{background:var(--soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
     .steps{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:24px}
     .step{text-align:center;position:relative}
@@ -118,7 +124,14 @@
           <article class="feature"><div class="num">6</div><h3>Export the finished record</h3><p>Create a completed spreadsheet containing the students who attended, including test scores and skills completion.</p></article>
           <article class="feature"><div class="num">7</div><h3>Build useful student history</h3><p>Keep a searchable student database and class history so prior attendance and contact information remain available for future work.</p></article>
           <article class="feature"><div class="num">8</div><h3>Keep photos and recovery tools together</h3><p>Associate class photos and files with the class, preserve backups, and use recovery points when an instructor needs to restore working data.</p></article>
-          <article class="feature"><div class="num">9</div><h3>Manage class communication</h3><p>Use Communication Center for announcements, contacts, reviewed campaigns, and explicit publishing of public class information.</p></article>
+          <article class="feature feature-promo">
+            <div class="num">9</div><h3>See ASM Instructor in Action</h3>
+            <video id="asm-promo" controls playsinline preload="none" poster="images/asm-instructor-promo-poster.jpg" aria-label="ASM Instructor promotional video">
+              <source src="videos/asm-instructor-promo-sanitized.mp4" type="video/mp4">
+              Your browser does not support HTML5 video.
+            </video>
+            <button class="promo-start" type="button" aria-label="Play: See ASM Instructor in Action" aria-controls="asm-promo" onclick="this.hidden=true;document.getElementById('asm-promo').play().catch(()=>{this.hidden=false})"><span aria-hidden="true">▶ Play</span></button>
+          </article>
         </div>
       </div>
     </section>
