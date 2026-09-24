@@ -55,7 +55,7 @@
     .promo-start:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
     .promo-start[hidden]{display:none}
     .workflow{background:var(--soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-    .steps{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:24px}
+    .steps{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:24px}
     .step{text-align:center;position:relative}
     .step-circle{width:58px;height:58px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;margin:0 auto 10px;font-weight:850;font-size:19px;box-shadow:0 7px 18px rgba(25,118,210,.22)}
     .step strong{display:block;font-size:14px}
@@ -68,7 +68,7 @@
     .checklist li::before{content:"✓";position:absolute;left:0;top:7px;width:21px;height:21px;border-radius:50%;background:#e5f6ef;color:var(--green);display:grid;place-items:center;font-weight:900;font-size:13px}
     .quote{background:linear-gradient(135deg,#eef5ff,#f8fbff);border-left:4px solid var(--blue);padding:22px;border-radius:0 14px 14px 0;color:#30455f;line-height:1.65}
     .quote strong{display:block;color:var(--ink);margin-top:10px}
-    .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+    .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px;text-align:center}
     .button{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:800}
     .button.primary{background:var(--blue);color:#fff}
     .button.secondary{border:1px solid var(--blue);color:#0b62bf;background:#fff}
@@ -80,7 +80,7 @@
     .copyright{text-align:center;border-top:1px solid rgba(255,255,255,.18);margin-top:22px;padding-top:12px;color:#c9d8eb;font-size:13px}
     @media(max-width:850px){.hero-grid{grid-template-columns:160px 1fr}.app-icon{width:150px;height:150px;border-radius:28px}.feature-grid{grid-template-columns:1fr 1fr}.steps{grid-template-columns:repeat(4,1fr)}.built{grid-template-columns:1fr}.footgrid{grid-template-columns:1fr 1fr}}
     body{overflow-x:hidden}header{height:auto;min-height:70px}nav{min-height:70px}.brand{white-space:nowrap}.menu-toggle,.mobile-menu{display:none}.menu-toggle{width:48px;height:48px;padding:12px;border:1px solid rgba(255,255,255,.35);border-radius:10px;background:transparent;color:#fff;align-items:center;justify-content:center;flex-direction:column;gap:5px}.menu-toggle span{display:block;width:23px;height:2px;background:currentColor;border-radius:2px}.mobile-menu{padding:2px 0 14px;border-top:1px solid rgba(255,255,255,.18)}.mobile-menu a{display:block;padding:12px 4px;color:#fff;text-decoration:none;font-weight:650}@media(max-width:850px){.links{display:none}.menu-toggle{display:flex}.mobile-menu.open{display:block}}
-    @media(max-width:560px){.brand{font-size:19px}.brand-logo{width:32px;height:38px}.hero{padding:36px 0}.hero-grid{grid-template-columns:1fr;text-align:center}.app-icon{width:150px;height:150px;margin:auto}.lead{font-size:17px}.status{margin-left:auto;margin-right:auto}.feature-grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.footgrid{grid-template-columns:1fr}.actions{flex-direction:column}.button{width:100%}}
+    @media(max-width:560px){.brand{font-size:19px}.brand-logo{width:32px;height:38px}.hero{padding:36px 0}.hero-grid{grid-template-columns:1fr;text-align:center}.app-icon{width:150px;height:150px;margin:auto}.lead{font-size:17px}.status{margin-left:auto;margin-right:auto}.feature-grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.footgrid{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.button{width:100%}}
   </style>
 </head>
 <body>
@@ -139,15 +139,20 @@
     <section class="workflow">
       <div class="wrap">
         <h2>How a class moves through the app</h2>
-        <p class="section-intro">The screens follow the same order an instructor already uses before, during, and after class.</p>
+        <p class="section-intro">From roster import to final export, ASM Instructor follows the workflow you already use to teach a class.</p>
         <div class="steps">
-          <div class="step"><div class="step-circle">1</div><strong>Import</strong><span>Load roster spreadsheet</span></div>
-          <div class="step"><div class="step-circle">2</div><strong>Preview</strong><span>Verify students and class data</span></div>
-          <div class="step"><div class="step-circle">3</div><strong>Setup</strong><span>Select instructors, date, and city</span></div>
-          <div class="step"><div class="step-circle">4</div><strong>Check In</strong><span>Confirm or edit student details</span></div>
-          <div class="step"><div class="step-circle">5</div><strong>Class Progress</strong><span>Track tests and skills</span></div>
-          <div class="step"><div class="step-circle">6</div><strong>Final Review</strong><span>Correct and lock the record</span></div>
-          <div class="step"><div class="step-circle">7</div><strong>Export</strong><span>Save the completed spreadsheet</span></div>
+          <div class="step"><div class="step-circle">1</div><strong>IMPORT</strong><span>Load the official roster</span></div>
+          <div class="step"><div class="step-circle">2</div><strong>CHECK ERRORS</strong><span>Review student contact details</span></div>
+          <div class="step"><div class="step-circle">3</div><strong>CHECK IN</strong><span>Confirm arrivals and walk-ins</span></div>
+          <div class="step"><div class="step-circle">4</div><strong>PRE-TEST</strong><span>Record starting knowledge</span></div>
+          <div class="step"><div class="step-circle">5</div><strong>TEACH</strong><span>Deliver the class</span></div>
+          <div class="step"><div class="step-circle">6</div><strong>TRACK SKILLS</strong><span>Record skills completion</span></div>
+          <div class="step"><div class="step-circle">7</div><strong>POST-TEST</strong><span>Record final test scores</span></div>
+          <div class="step"><div class="step-circle">8</div><strong>EVALUATE</strong><span>Collect student evaluations</span></div>
+          <div class="step"><div class="step-circle">9</div><strong>REVIEW CLASS</strong><span>Check for missing information</span></div>
+          <div class="step"><div class="step-circle">10</div><strong>CLOSE CLASS</strong><span>Finalize and lock the class</span></div>
+          <div class="step"><div class="step-circle">11</div><strong>FINAL RECORD</strong><span>Keep the completed class record</span></div>
+          <div class="step"><div class="step-circle">12</div><strong>EXPORT</strong><span>Save the completed spreadsheet</span></div>
         </div>
       </div>
     </section>
@@ -157,14 +162,17 @@
         <div class="panel">
           <h3>Designed around real instructor needs</h3>
           <ul class="checklist">
+            <li>Publishes selected upcoming-class information to PeterHamRN.com only when explicitly requested</li>
             <li>Preserves the original roster and filename</li>
+            <li>Flags missing or suspicious student contact information before finalizing the roster</li>
             <li>Supports checked-in students, no-shows, and walk-ins</li>
             <li>Tracks pre-test scores, post-test scores, and skills sheets</li>
+            <li>Collects and automatically aggregates student evaluations</li>
+            <li>Checks for missing scores, skills, evaluations, and other required information before class close</li>
             <li>Allows corrections before the class is finalized</li>
+            <li>Stores class photos and provides backup and recovery tools</li>
             <li>Keeps completed class records available for later review</li>
             <li>Maintains a searchable student database and course history</li>
-            <li>Stores class photos and provides backup and recovery tools</li>
-            <li>Publishes selected upcoming-class information to PeterHamRN.com only when explicitly requested</li>
             <li>Supports ongoing improvements based on instructor feedback</li>
           </ul>
         </div>
@@ -172,6 +180,7 @@
           <div class="quote">“ASM Instructor was created after years of managing classes with spreadsheets and manual processes. The goal is not to change how instructors teach—it is to remove the unnecessary administrative work around the class.”<strong>Peter Ham, BSN, RN<br>Accident Scene Management Instructor</strong></div>
           <div class="actions">
             <a class="button primary" href="mailto:support@PeterHamRN.com?subject=ASM%20Instructor%20Information">Ask About ASM Instructor</a>
+            <a class="button primary" href="/assets/brochures/ASM%20Brochure%20Final%20Edition.pdf" target="_blank" rel="noopener">Download Brochure</a>
             <a class="button secondary" href="/">Back to PeterHamRN.com</a>
           </div>
           <p class="note">ASM Instructor remains in active TEST development. Public class announcements can be viewed on the Upcoming Classes page; the instructor application itself is not presented as a public release.</p>
