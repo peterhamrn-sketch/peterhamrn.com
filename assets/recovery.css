@@ -36,4 +36,4 @@ footer a{color:inherit;text-underline-offset:3px}\nfooter .footer-cta{display:bl
 .form-error{padding:11px 12px;border-radius:10px;background:#fff0f0;color:#8b1e1e;font-weight:650}
 .verified{padding:12px 14px;border-radius:10px;background:#eaf8ef;color:#17683b;font-weight:700;overflow-wrap:anywhere}
 .activation-copy{margin:0 auto;max-width:470px}.activation-card .content{padding:28px 30px 30px}
-@media(max-width:520px){.activation-card .content{padding:24px 18px}.preference-grid{grid-template-columns:1fr}}
+.tag-list{display:grid;gap:18px;margin-top:22px}.tag-manage{padding:18px;border:1px solid var(--line);border-radius:14px;background:#fbfdff}.tag-manage h2{margin:0;font-size:22px}.tag-meta{margin:4px 0 0;color:#526174}.recovery-form.compact{margin-top:16px}.manage-link{display:block;text-align:center;font-weight:700;color:#1265c7;text-underline-offset:3px}\n@media(max-width:520px){.activation-card .content{padding:24px 18px}.preference-grid{grid-template-columns:1fr}}
