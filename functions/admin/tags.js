@@ -51,8 +51,8 @@ function randomBase64Url(byteLength = 24) {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 function page(tags, createdUrl = '', message = '') {
-  const waiting = tags.filter(t => t.status === 'unclaimed' && !t.programmed_at);
-  const programmed = tags.filter(t => !!t.programmed_at);
+  const waiting = tags.filter(t => t.status === 'unclaimed' && t.serial_number && !t.programmed_at);
+  const programmed = tags.filter(t => t.serial_number && !!t.programmed_at);
   const next = waiting[0];
   const nextUrl = next ? 'https://peterhamrn.com/find/' + next.public_token : '';
   const rows = tags.map(tag => {
