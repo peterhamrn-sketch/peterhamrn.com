@@ -19,8 +19,8 @@ async function authorized(request, env) {
   return (await sha256(header.slice(7))) === (await sha256(env.RECOVERY_PROGRAMMER_TOKEN));
 }
 function tagPayload(tag) {
-  if (!tag) return { done: true };
-  return { done: false, id: tag.id, serial: tag.serial_number,
+  if (!tag) return { done: 1 };
+  return { done: 0, id: tag.id, serial: tag.serial_number,
     url: 'https://peterhamrn.com/find/' + tag.public_token };
 }
 async function nextTag(env) {
@@ -65,7 +65,7 @@ export async function onRequest({ request, env }) {
     `).bind(id).run();
     if (!result.meta?.changes) return json({ error: 'update_conflict' }, 409);
 
-    return json({ programmed: true, serial: tag.serial_number,
+    return json({ programmed: 1, serial: tag.serial_number,
       next: tagPayload(await nextTag(env)) });
   } catch {
     return json({ error: 'temporarily_unavailable' }, 503);
