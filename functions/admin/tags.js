@@ -7,7 +7,6 @@ const HEADERS = {
   'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
 };
 const ADMIN_USER = 'peter';
-const ADMIN_PASSWORD_SHA256 = '2d9831f08a2debc1aaa67935c9555bef69e249f7a22e36dfae02b9b35a9a22e4';
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({
@@ -19,14 +18,15 @@ async function sha256(value) {
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
-async function authorized(request) {
+async function authorized(request, env) {
+  if (!env.RECOVERY_ADMIN_PASSWORD) return false;
   const header = request.headers.get('Authorization') || '';
   if (!header.startsWith('Basic ')) return false;
   try {
     const decoded = atob(header.slice(6));
     const split = decoded.indexOf(':');
     if (split < 0 || decoded.slice(0, split) !== ADMIN_USER) return false;
-    return (await sha256(decoded.slice(split + 1))) === ADMIN_PASSWORD_SHA256;
+    return (await sha256(decoded.slice(split + 1))) === (await sha256(env.RECOVERY_ADMIN_PASSWORD));
   } catch { return false; }
 }function response(body, status = 200, method = 'GET', extra = {}) {
   return new Response(method === 'HEAD' ? null : body, { status, headers: { ...HEADERS, ...extra } });
@@ -65,7 +65,7 @@ function page(tags) {
   if (method !== 'GET' && method !== 'HEAD') {
     return response('<h1>Method not allowed</h1>', 405, method, { Allow: 'GET, HEAD' });
   }
-  if (!(await authorized(request))) return login(method);
+  if (!(await authorized(request, env))) return login(method);
   try {
     const result = await env.RECOVERY_DB.prepare(`
       SELECT id, public_token, item_label, status, created_at, updated_at
