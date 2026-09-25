@@ -44,12 +44,20 @@ test('active token reveals only its assigned owner and sends privacy headers', a
 test('unavailable states, unknown tokens, and invalid tokens never expose contact details', async () => {
   const { db, request } = fixture();
   try {
-    for (const status of ['inactive', 'replaced', 'unclaimed']) {
-      db.prepare('UPDATE recovery_tags SET status=?, owner_id=?').run(status, status === 'unclaimed' ? null : 'one');
+    for (const status of ['inactive', 'replaced']) {
+      db.prepare('UPDATE recovery_tags SET status=?, owner_id=?').run(status, 'one');
       const response = await request();
       assert.equal(response.status, 404);
       assert.doesNotMatch(await response.text(), /Alex|Test Keys|alex@example|12025550123/);
     }
+    db.prepare('UPDATE recovery_tags SET status=?, owner_id=?').run('unclaimed', null);
+    const unclaimed = await request();
+    assert.equal(unclaimed.status, 200);
+    const activationHtml = await unclaimed.text();
+    assert.match(activationHtml, /Activate Your Recovery Tag/);
+    assert.match(activationHtml, /ACTIVATE TAG/);
+    assert.match(activationHtml, new RegExp('href="/activate/' + token + '"'));
+    assert.doesNotMatch(activationHtml, /Alex|Test Keys|alex@example|12025550123/);
     for (const value of ['B'.repeat(32), "' OR 1=1 --", 'A'.repeat(31), 'A'.repeat(33)]) {
       assert.equal((await request(value)).status, 404);
     }
