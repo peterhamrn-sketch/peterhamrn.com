@@ -4,7 +4,7 @@ const HEADERS = {
   'X-Robots-Tag': 'noindex, nofollow, noarchive',
   'Referrer-Policy': 'no-referrer',
   'X-Content-Type-Options': 'nosniff',
-  'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+  'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
 };
 const ADMIN_USER = 'peter';
 
@@ -43,7 +43,14 @@ function formatDate(value) {
     year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', timeZone:'America/New_York'
   });
 }
-function page(tags) {
+function randomBase64Url(byteLength = 24) {
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+function page(tags, createdUrl = '') {
   const rows = tags.map(tag => {
     const url = 'https://peterhamrn.com/find/' + tag.public_token;
     return `<tr><td><strong>${escapeHtml(tag.item_label || 'Unlabeled tag')}</strong></td>
@@ -55,24 +62,37 @@ function page(tags) {
   }).join('');
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive"><title>Recovery Tags Admin | PeterHamRN.com</title>
-<style>*{box-sizing:border-box}body{margin:0;background:#071a33;color:#eef5ff;font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{padding:18px 24px;border-bottom:1px solid #294461;background:#06162b}header a{color:#fff;text-decoration:none;font-weight:800;font-size:20px}header span{color:#69b7ff}main{max-width:1200px;margin:auto;padding:32px 20px}h1{margin:0 0 8px;font-size:32px}.sub{margin:0 0 24px;color:#adc2d9}.card{background:#0c2748;border:1px solid #294b70;border-radius:16px;overflow:hidden;box-shadow:0 16px 40px #0004}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:960px}th,td{text-align:left;padding:15px 14px;border-bottom:1px solid #294b70;vertical-align:middle}th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#9fb8d2;background:#0a213d}tr:last-child td{border-bottom:0}code{font-size:12px;color:#cce4ff}.status{display:inline-block;padding:5px 9px;border-radius:999px;background:#263e59;text-transform:capitalize}.status.active{background:#164d38;color:#bff8d8}.status.unclaimed{background:#5a4818;color:#ffe49a}.status.inactive,.status.replaced{background:#5b2930;color:#ffd0d5}.date{white-space:nowrap;font-size:13px;color:#c2d2e3}.actions{white-space:nowrap}.actions a,.actions button{display:inline-block;margin:3px;padding:8px 10px;border:1px solid #5d8fc2;border-radius:8px;background:#12385f;color:#fff;text-decoration:none;font:inherit;cursor:pointer}.count{margin:0 0 12px;color:#c7d7e8}@media(max-width:700px){main{padding:22px 12px}h1{font-size:27px}}</style></head>
+<style>*{box-sizing:border-box}body{margin:0;background:#071a33;color:#eef5ff;font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}header{padding:18px 24px;border-bottom:1px solid #294461;background:#06162b}header a{color:#fff;text-decoration:none;font-weight:800;font-size:20px}header span{color:#69b7ff}main{max-width:1200px;margin:auto;padding:32px 20px}h1{margin:0 0 8px;font-size:32px}.sub{margin:0 0 24px;color:#adc2d9}.card{background:#0c2748;border:1px solid #294b70;border-radius:16px;overflow:hidden;box-shadow:0 16px 40px #0004}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:960px}th,td{text-align:left;padding:15px 14px;border-bottom:1px solid #294b70;vertical-align:middle}th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#9fb8d2;background:#0a213d}tr:last-child td{border-bottom:0}code{font-size:12px;color:#cce4ff}.status{display:inline-block;padding:5px 9px;border-radius:999px;background:#263e59;text-transform:capitalize}.status.active{background:#164d38;color:#bff8d8}.status.unclaimed{background:#5a4818;color:#ffe49a}.status.inactive,.status.replaced{background:#5b2930;color:#ffd0d5}.date{white-space:nowrap;font-size:13px;color:#c2d2e3}.create{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 20px}.create button,.created button,.created a{padding:9px 12px;border:1px solid #5d8fc2;border-radius:8px;background:#12385f;color:#fff;text-decoration:none;font:inherit;cursor:pointer}.create span{color:#adc2d9;font-size:14px}.created{padding:12px;border:1px solid #4b6f93;border-radius:10px;background:#0a213d;overflow-wrap:anywhere}.actions{white-space:nowrap}.actions a,.actions button{display:inline-block;margin:3px;padding:8px 10px;border:1px solid #5d8fc2;border-radius:8px;background:#12385f;color:#fff;text-decoration:none;font:inherit;cursor:pointer}.count{margin:0 0 12px;color:#c7d7e8}@media(max-width:700px){main{padding:22px 12px}h1{font-size:27px}}</style></head>
 <body><header><a href="/">PeterHamRN<span>.com</span></a></header><main><h1>Recovery Tags Admin</h1>
-<p class="sub">Read-only view of the recovery-tag database.</p><p class="count">${tags.length} tag${tags.length === 1 ? '' : 's'}</p>
+<p class="sub">Recovery-tag database and test-tag provisioning.</p>
+<form method="post" class="create"><input type="hidden" name="action" value="create-test"><button type="submit">Create Test Tag</button><span>Creates one unclaimed database record with a permanent random URL.</span></form>
+${createdUrl ? `<p class="created"><strong>Test tag created:</strong> <code>${escapeHtml(createdUrl)}</code> <button type="button" data-copy="${escapeHtml(createdUrl)}">Copy URL</button> <a href="${escapeHtml(createdUrl)}" target="_blank" rel="noopener">Open</a></p>` : ''}
+<p class="count">${tags.length} tag${tags.length === 1 ? '' : 's'}</p>
 <div class="card"><div class="scroll"><table><thead><tr><th>Item</th><th>Status</th><th>Token</th><th>Created</th><th>Updated</th><th>Actions</th></tr></thead><tbody>${rows || '<tr><td colspan="6">No tags found.</td></tr>'}</tbody></table></div></div></main>
 <script>document.addEventListener('click',async e=>{const b=e.target.closest('[data-copy]');if(!b)return;try{await navigator.clipboard.writeText(b.dataset.copy);const old=b.textContent;b.textContent='Copied';setTimeout(()=>b.textContent=old,1200)}catch{prompt('Copy this URL:',b.dataset.copy)}})</script></body></html>`;
 }export async function onRequest({ request, env }) {
   const method = request.method;
-  if (method !== 'GET' && method !== 'HEAD') {
-    return response('<h1>Method not allowed</h1>', 405, method, { Allow: 'GET, HEAD' });
+  if (method !== 'GET' && method !== 'HEAD' && method !== 'POST') {
+    return response('<h1>Method not allowed</h1>', 405, method, { Allow: 'GET, HEAD, POST' });
   }
   if (!(await authorized(request, env))) return login(method);
   try {
+    let createdUrl = '';
+    if (method === 'POST') {
+      const form = await request.formData();
+      if (form.get('action') !== 'create-test') return response('<h1>Bad request</h1>', 400, method);
+      const token = randomBase64Url();
+      const id = crypto.randomUUID();
+      await env.RECOVERY_DB.prepare(`INSERT INTO recovery_tags (id, public_token, item_label, status) VALUES (?, ?, ?, 'unclaimed')`)
+        .bind(id, token, 'Test Tag').run();
+      createdUrl = 'https://peterhamrn.com/find/' + token;
+    }
     const result = await env.RECOVERY_DB.prepare(`
       SELECT id, public_token, item_label, status, created_at, updated_at
       FROM recovery_tags
       ORDER BY created_at ASC
     `).all();
-    return response(page(result.results || []), 200, method);
+    return response(page(result.results || [], createdUrl), 200, method);
   } catch {
     return response('<!doctype html><title>Recovery Tags Admin</title><h1>Temporarily unavailable</h1><p>The tag database could not be read.</p>', 503, method);
   }
