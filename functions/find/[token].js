@@ -60,7 +60,8 @@ export async function onRequest({ request, params, env }) {
   const link = (href, label) => `<a class="action" href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
   if (tag.allow_call === 1 && phone) actions.push(link(`tel:${phone}`, `CALL${recipient}`));
   if (tag.allow_text === 1 && phone) actions.push(link(`sms:${phone}`, `TEXT${recipient}`));
-  if (tag.allow_email === 1 && email) actions.push(link(`mailto:${encodeURIComponent(email).replace('%40', '@')}`, `EMAIL${recipient}`));
+  // Preserve the direct mailto link without Cloudflare's JavaScript email decoder.
+  if (tag.allow_email === 1 && email) actions.push(`<!--email_off-->${link(`mailto:${encodeURIComponent(email).replace('%40', '@')}`, `EMAIL${recipient}`)}<!--/email_off-->`);
 
   return page(`<div class="content"><h1>Thanks for finding my keys!</h1>
 <p class="item">${escapeHtml(tag.item_label)}</p>
