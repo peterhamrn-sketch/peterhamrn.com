@@ -1,0 +1,10 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Ham;Peter;;;BSN\, RN
+FN:Peter Ham\, BSN\, RN
+ORG:Peter Ham Solutions
+TITLE:Registered Nurse · ASM Instructor · Developer
+TEL;TYPE=WORK,VOICE:+18439575825
+EMAIL;TYPE=INTERNET,WORK:peter@peterhamrn.com
+URL:https://peterhamrn.com
+END:VCARD
