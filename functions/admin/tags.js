@@ -111,7 +111,7 @@ ${createdUrl ? `<p class="created"><strong>Test tag created:</strong> <code>${es
         message = `Provisioned ${quantity} tag${quantity === 1 ? '' : 's'}.`;
       } else if (action === 'mark-programmed') {
         const id = String(form.get('tag_id') || '');
-        const result = await env.RECOVERY_DB.prepare(`UPDATE recovery_tags SET programmed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'unclaimed' AND programmed_at IS NULL`).bind(id).run();
+        const result = await env.RECOVERY_DB.prepare(`UPDATE recovery_tags SET programmed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'unclaimed' AND serial_number GLOB 'RT-[0-9]*' AND programmed_at IS NULL`).bind(id).run();
         if (!result.meta?.changes) return response('<h1>Tag was not eligible to mark programmed.</h1>', 409, method);
         message = 'Tag marked programmed. The next tag is ready.';
       } else return response('<h1>Bad request</h1>', 400, method);
