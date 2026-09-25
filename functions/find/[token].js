@@ -73,9 +73,9 @@ export async function onRequest({ request, params, env }) {
   // Preserve the direct mailto link without Cloudflare's JavaScript email decoder.
   if (tag.allow_email === 1 && email) actions.push(`<!--email_off-->${link(`mailto:${encodeURIComponent(email).replace('%40', '@')}`, `EMAIL${recipient}`)}<!--/email_off-->`);
 
-  return page(`<div class="content"><h1>Thanks for finding my keys!</h1>
+  return page(`<div class="content"><h1>Thanks for finding my ${escapeHtml(tag.item_label)}!</h1>
 <p class="item">${escapeHtml(tag.item_label)}</p>
 ${firstName ? `<p class="owner">${escapeHtml(firstName)}</p>` : ''}
 <div class="actions">${actions.join('') || '<p>No contact options are currently available.</p>'}</div>
-<p class="note">Thank you for helping these keys find their way home.</p></div>`, 200, method);
+<p class="note">Thank you for helping my ${escapeHtml(tag.item_label)} find its way home.</p></div>`, 200, method);
 }
