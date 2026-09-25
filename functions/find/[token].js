@@ -16,10 +16,10 @@ function escapeHtml(value) {
 
 function page(content, status, method, extraHeaders = {}) {
   const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#061d3c"><meta name="robots" content="noindex,nofollow,noarchive"><title>Found keys | PeterHamRN.com</title><link rel="icon" type="image/svg+xml" href="/peterhamrn-logo.svg"><link rel="stylesheet" href="/assets/recovery.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#061d3c"><meta name="robots" content="noindex,nofollow,noarchive"><title>Found keys | PeterHamRN.com</title><link rel="icon" type="image/svg+xml" href="/peterhamrn-logo.svg"><link rel="stylesheet" href="/assets/recovery.css?v=20260925b"></head>
 <body><header><a class="brand" href="/"><img src="/peterhamrn-logo.svg" width="38" height="44" alt="">PeterHamRN<span>.com</span></a></header>
 <main><article class="card"><div class="identity"><img src="/peterhamrn-logo.svg" width="104" height="104" alt="PH shield logo"><p class="eyebrow">Lost item recovery</p></div>${content}</article></main>
-<footer>Peter Ham Solutions · <a href="/">PeterHamRN.com</a></footer></body></html>`;
+<footer><a class="footer-cta" href="/recovery-tags">Like how this works? Get your own Recovery Tag →</a><div>Peter Ham Solutions · <a href="/">PeterHamRN.com</a></div></footer></body></html>`;
   return new Response(method === 'HEAD' ? null : html, {
     status, headers: { ...HEADERS, ...extraHeaders }
   });
