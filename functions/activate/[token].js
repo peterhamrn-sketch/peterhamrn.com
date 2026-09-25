@@ -37,7 +37,7 @@ export async function onRequest({request,params,env}){
  if(request.method!=='GET'&&request.method!=='POST')return msg('Method not allowed','',405);
  let t;try{t=await tag(env,token)}catch{return msg('Temporarily unavailable','Please try again shortly.',503)}
  if(!t||t.status!=='unclaimed')return unavailable();if(request.method==='GET')return emailForm();
- const origin=request.headers.get('Origin');if(origin){let host='';try{host=new URL(origin).hostname.toLowerCase()}catch{}if(host!=='peterhamrn.com'&&!host.endsWith('.peterhamrn.com'))return msg('Request blocked','Please open the tag again and retry.',403);}
+ const origin=request.headers.get('Origin');if(origin&&origin!=='null'){let host='';try{host=new URL(origin).hostname.toLowerCase()}catch{}if(host!=='peterhamrn.com'&&!host.endsWith('.peterhamrn.com'))return msg('Request blocked','Please open the tag again and retry.',403);}
  let f;try{f=await request.formData()}catch{return msg('Bad request','Please try again.',400)}
  const a=f.get('action');
  if(a==='send-code')return send(request,env,t,f.get('email'));
