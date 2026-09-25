@@ -29,6 +29,14 @@ function unavailable(method) {
   return page('<div class="content"><h1>Tag unavailable</h1><p>No contact details are available for this tag.</p></div>', 404, method);
 }
 
+function unclaimed(token, method) {
+  const href = `/activate/${encodeURIComponent(token)}`;
+  return page(`<div class="content"><h1>Activate Your Recovery Tag</h1>
+<p>This tag hasn’t been registered yet. Activate it to add your contact information and identify the item it’s attached to.</p>
+<div class="actions"><a class="action" href="${escapeHtml(href)}">ACTIVATE TAG</a></div>
+<p class="note">Each recovery tag is activated separately.</p></div>`, 200, method);
+}
+
 export async function onRequest({ request, params, env }) {
   const method = request.method;
   if (method !== 'GET' && method !== 'HEAD') {
@@ -39,11 +47,11 @@ export async function onRequest({ request, params, env }) {
   let tag;
   try {
     tag = await env.RECOVERY_DB.prepare(`
-      SELECT t.item_label, o.display_name, o.phone, o.email,
+      SELECT t.status, t.item_label, o.display_name, o.phone, o.email,
              o.show_name, o.allow_call, o.allow_text, o.allow_email
       FROM recovery_tags AS t
-      JOIN owners AS o ON o.id = t.owner_id
-      WHERE t.public_token = ? AND t.status = 'active'
+      LEFT JOIN owners AS o ON o.id = t.owner_id
+      WHERE t.public_token = ?
       LIMIT 1
     `).bind(params.token).first();
   } catch {
@@ -51,6 +59,8 @@ export async function onRequest({ request, params, env }) {
     return page('<div class="content"><h1>Temporarily unavailable</h1><p>Please try this tag again shortly.</p></div>', 503, method);
   }
   if (!tag) return unavailable(method);
+  if (tag.status === 'unclaimed') return unclaimed(params.token, method);
+  if (tag.status !== 'active') return unavailable(method);
 
   const firstName = tag.show_name === 1 ? String(tag.display_name || '').trim().split(/\s+/)[0] : '';
   const recipient = firstName ? ` ${firstName.toUpperCase()}` : ' OWNER';
