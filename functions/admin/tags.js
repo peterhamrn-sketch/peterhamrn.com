@@ -51,8 +51,10 @@ function randomBase64Url(byteLength = 24) {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 function page(tags, createdUrl = '', message = '') {
-  const waiting = tags.filter(t => t.status === 'unclaimed' && t.serial_number && !t.programmed_at);
-  const programmed = tags.filter(t => t.serial_number && !!t.programmed_at);
+  const numbered = t => /^RT-[0-9]+$/.test(t.serial_number || '');
+  const waiting = tags.filter(t => ['active', 'unclaimed'].includes(t.status) && numbered(t) && t.programmed_at === null)
+    .sort((a, b) => Number(a.serial_number.slice(3)) - Number(b.serial_number.slice(3)) || a.serial_number.localeCompare(b.serial_number));
+  const programmed = tags.filter(t => numbered(t) && t.programmed_at !== null);
   const next = waiting[0];
   const nextUrl = next ? 'https://peterhamrn.com/find/' + next.public_token : '';
   const rows = tags.map(tag => {
@@ -111,7 +113,7 @@ ${createdUrl ? `<p class="created"><strong>Test tag created:</strong> <code>${es
         message = `Provisioned ${quantity} tag${quantity === 1 ? '' : 's'}.`;
       } else if (action === 'mark-programmed') {
         const id = String(form.get('tag_id') || '');
-        const result = await env.RECOVERY_DB.prepare(`UPDATE recovery_tags SET programmed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status = 'unclaimed' AND serial_number GLOB 'RT-[0-9]*' AND programmed_at IS NULL`).bind(id).run();
+        const result = await env.RECOVERY_DB.prepare(`UPDATE recovery_tags SET programmed_at = strftime('%Y-%m-%dT%H:%M:%fZ','now'), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ? AND status IN ('unclaimed', 'active') AND serial_number GLOB 'RT-[0-9]*' AND SUBSTR(serial_number, 4) NOT GLOB '*[^0-9]*' AND programmed_at IS NULL`).bind(id).run();
         if (!result.meta?.changes) return response('<h1>Tag was not eligible to mark programmed.</h1>', 409, method);
         message = 'Tag marked programmed. The next tag is ready.';
       } else return response('<h1>Bad request</h1>', 400, method);
