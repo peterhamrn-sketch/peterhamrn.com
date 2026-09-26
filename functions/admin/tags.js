@@ -63,7 +63,7 @@ function page(tags, createdUrl = '', message = '') {
     const lifecycleLabel = lifecycle === 'not-provisioned' ? 'Not Provisioned' : (lifecycle === 'unclaimed' ? 'Ready / Unclaimed' : lifecycle);
     return `<tr class="tag-row ${escapeHtml(lifecycle)}"><td><strong>${escapeHtml(tag.item_label || 'Unlabeled tag')}</strong></td>
 <td><span class="status ${escapeHtml(lifecycle)}">${escapeHtml(lifecycleLabel)}</span></td>
-<td>${tag.serial_number ? `<strong>${escapeHtml(tag.serial_number)}</strong>` : '—'}</td>
+<td>${tag.serial_number ? `<a class="serial-link" href="/admin/tag?serial=${encodeURIComponent(tag.serial_number)}"><strong>${escapeHtml(tag.serial_number)}</strong></a>` : '—'}</td>
 <td><code>${escapeHtml(tag.public_token)}</code></td>
 <td class="date">${escapeHtml(formatDate(tag.created_at))}</td>
 <td class="date">${escapeHtml(formatDate(tag.updated_at))}</td>
