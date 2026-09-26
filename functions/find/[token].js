@@ -16,10 +16,10 @@ function escapeHtml(value) {
 
 function page(content, status, method, extraHeaders = {}) {
   const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#061d3c"><meta name="robots" content="noindex,nofollow,noarchive"><title>Found keys | PeterHamRN.com</title><link rel="icon" type="image/svg+xml" href="/peterhamrn-logo.svg"><link rel="stylesheet" href="/assets/recovery.css?v=20260925b"></head>
-<body><header><a class="brand" href="/"><img src="/peterhamrn-logo.svg" width="38" height="44" alt="">PeterHamRN<span>.com</span></a></header>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#061d3c"><meta name="robots" content="noindex,nofollow,noarchive"><title>Found Item | Recovery Tags</title><link rel="icon" type="image/svg+xml" href="/peterhamrn-logo.svg"><link rel="stylesheet" href="/assets/recovery.css?v=20260925b"></head>
+<body><header><a class="brand" href="/recovery-tags"><img src="/peterhamrn-logo.svg" width="38" height="44" alt="">Recovery Tags</a></header>
 <main><article class="card"><div class="identity"><img src="/peterhamrn-logo.svg" width="104" height="104" alt="PH shield logo"><p class="eyebrow">Lost item recovery</p></div>${content}</article></main>
-<footer><a class="footer-cta" href="/recovery-tags">Like how this works? Get your own Recovery Tag →</a><div>Peter Ham Solutions · <a href="/">PeterHamRN.com</a></div></footer></body></html>`;
+<footer><a class="footer-cta" href="/recovery-tags">Like how this works? Get your own Recovery Tag →</a><div>Recovery Tags · Lost Item Recovery</div></footer></body></html>`;
   return new Response(method === 'HEAD' ? null : html, {
     status, headers: { ...HEADERS, ...extraHeaders }
   });
@@ -69,9 +69,9 @@ export async function onRequest({ request, params, env }) {
   const actions = [];
   const link = (href, label) => `<a class="action" href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
   if (tag.allow_call === 1 && phone) actions.push(link(`tel:${phone}`, `CALL${recipient}`));
-  if (tag.allow_text === 1 && phone) actions.push(link(`sms:${phone}`, `TEXT${recipient}`));
+  if (tag.allow_text === 1 && phone) { const m=`Hi, I found your ${tag.item_label} using your Recovery Tag. Please let me know how I can get it back to you.`; actions.push(link(`sms:${phone}&body=${encodeURIComponent(m)}`, `TEXT${recipient}`)); }
   // Preserve the direct mailto link without Cloudflare's JavaScript email decoder.
-  if (tag.allow_email === 1 && email) actions.push(`<!--email_off-->${link(`mailto:${encodeURIComponent(email).replace('%40', '@')}`, `EMAIL${recipient}`)}<!--/email_off-->`);
+  if (tag.allow_email === 1 && email) { const subject='I found your Recovery Tag', body=`Hi, I found your ${tag.item_label} using your Recovery Tag. Please let me know how I can get it back to you.`; actions.push(`<!--email_off-->${link(`mailto:${encodeURIComponent(email).replace('%40', '@')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, `EMAIL${recipient}`)}<!--/email_off-->`); }
 
   return page(`<div class="content"><h1>Thanks for finding my ${escapeHtml(tag.item_label)}!</h1>
 <p class="item">${escapeHtml(tag.item_label)}</p>
