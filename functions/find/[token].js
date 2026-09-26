@@ -77,5 +77,6 @@ export async function onRequest({ request, params, env }) {
 <p class="item">${escapeHtml(tag.item_label)}</p>
 ${firstName ? `<p class="owner">${escapeHtml(firstName)}</p>` : ''}
 <div class="actions">${actions.join('') || '<p>No contact options are currently available.</p>'}</div>
-<p class="note">Thank you for helping my ${escapeHtml(tag.item_label)} find its way home.</p></div>`, 200, method);
+<p class="note">Thank you for helping my ${escapeHtml(tag.item_label)} find its way home.</p>
+<a class="manage-link" href="/tags">Manage My Tags →</a></div>`, 200, method);
 }
