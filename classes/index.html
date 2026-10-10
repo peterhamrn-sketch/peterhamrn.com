@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#061d3c">
-  <meta name="description" content="Upcoming Accident Scene Management classes published by Peter Ham, BSN, RN.">
+  <meta name="description" content="Upcoming and past Accident Scene Management classes published by Peter Ham, BSN, RN.">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="/peterhamrn-logo.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <title>Upcoming Classes | PeterHamRN.com</title>
+  <title>Classes | PeterHamRN.com</title>
   <style>
     :root{--navy:#061d3c;--navy2:#0b3b74;--blue:#1976ed;--ink:#0d2042;--muted:#526174;--line:#dce3ed;--soft:#f4f7fb;--danger:#8f2424}
     *{box-sizing:border-box}
@@ -32,6 +32,7 @@
     .status.error{border-color:#e1b7b7;color:var(--danger)}
     .class-list{display:grid;gap:22px}
     .class-card{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:26px;padding:26px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 7px 22px rgba(8,35,71,.09)}
+    .completed-badge{display:inline-block;background:#16723c;color:#fff;font-weight:900;letter-spacing:.08em;padding:9px 15px;border-radius:8px;margin-bottom:15px}.class-section-heading{font-size:30px;color:var(--navy);margin:0 0 20px}.past-classes{margin-top:46px}.historical-note{color:var(--muted);font-size:14px;line-height:1.5}
     .canceled-badge{display:inline-block;background:#b91c1c;color:#fff;font-weight:900;letter-spacing:.08em;padding:9px 15px;border-radius:8px;margin-bottom:15px}.cancellation-notice{color:#8f2424;font-weight:700;white-space:pre-line}.registration-closed{background:#fbeaea;color:#8f2424}
     .class-card.no-flyer{grid-template-columns:1fr}
     .class-card h2{font-size:clamp(25px,4vw,34px);line-height:1.15;margin:0 0 15px;color:var(--navy)}
@@ -76,15 +77,27 @@
     <section class="hero">
       <div class="wrap">
         <p class="eyebrow">Accident Scene Management</p>
-        <h1>Upcoming Classes</h1>
-        <p class="lead">View public class announcements, details, and registration information published by Peter Ham, BSN, RN.</p>
+        <h1>Classes</h1>
+        <p class="lead">View upcoming class announcements and past classes published by Peter Ham, BSN, RN.</p>
       </div>
     </section>
 
     <section class="classes-section" aria-label="Published classes">
       <div class="wrap">
-        <div id="classes-status" class="status" role="status">Loading upcoming classes…</div>
-        <div id="class-list" class="class-list" hidden></div>
+        <div id="classes-status" class="status" role="status">Loading published classes…</div>
+        <div id="class-sections" hidden>
+          <section aria-labelledby="upcoming-heading">
+            <h2 id="upcoming-heading" class="class-section-heading">Upcoming Classes</h2>
+            <div id="upcoming-empty" class="status" hidden>No upcoming classes are currently published.</div>
+            <div id="class-list" class="class-list"></div>
+          </section>
+          <section class="past-classes" aria-labelledby="past-heading">
+            <h2 id="past-heading" class="class-section-heading">Past Classes</h2>
+            <p class="historical-note">COMPLETED means the scheduled end time has passed; it does not confirm attendance or course completion.</p>
+            <div id="past-empty" class="status" hidden>No past classes are currently published.</div>
+            <div id="past-class-list" class="class-list"></div>
+          </section>
+        </div>
       </div>
     </section>
   </main>
@@ -99,12 +112,17 @@
     </div>
   </footer>
 
+  <script src="/classes/public-display.js"></script>
   <script>
     (() => {
       'use strict';
       const FEED_URL = '/api/public/classes';
       const status = document.getElementById('classes-status');
       const list = document.getElementById('class-list');
+      const pastList = document.getElementById('past-class-list');
+      const sections = document.getElementById('class-sections');
+      const { easternNow, classify } = window.ClassPublicDisplay;
+      let publishedClasses = [], displayedClassification = '';
       const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
       const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -131,7 +149,7 @@
           classType: source.classType,
           date: source.date,
           startTime: source.startTime,
-          endTime: source.endTime,
+          endTime: source.endTime === undefined ? '' : source.endTime,
           location: source.location,
           registrationLink: source.registrationLink,
           publicDescription: source.publicDescription,
@@ -218,14 +236,16 @@
         return menu;
       }
 
-      function renderClass(item) {
+      function renderClass(item, display) {
         const canceled = item.classStatus === 'canceled';
+        const past = display.isPast;
         const card = document.createElement('article');
         card.className = `class-card${item.flyerUrl && !canceled ? '' : ' no-flyer'}`;
         card.dataset.publicId = item.publicId;
 
         const content = document.createElement('div');
-        if (canceled) content.append(textElement('span', 'canceled-badge', 'CANCELED', 'classStatus'));
+        if (canceled) content.append(textElement('span', 'canceled-badge', 'CANCELED', 'displayStatus'));
+        else if (past) content.append(textElement('span', 'completed-badge', 'COMPLETED', 'displayStatus'));
         content.append(textElement('h2', '', item.classType, 'classType'));
         const metadata = document.createElement('div');
         metadata.className = 'class-meta';
@@ -240,8 +260,9 @@
         if (canceled) content.append(textElement('p', 'cancellation-notice', item.cancellationReason.trim() || 'This class has been canceled. Registration is closed.', 'cancellationReason'));
         const actions = document.createElement('div');
         actions.className = 'actions';
-        if (canceled) {
+        if (canceled || past) {
           actions.append(textElement('span', 'button registration-closed', 'Registration Closed'));
+          if (past && !canceled && item.flyerUrl) actions.append(externalLink('button secondary', 'Historical Flyer', item.flyerUrl, 'flyerUrl'));
         } else {
         actions.append(externalLink('button primary', 'Registration & Details', item.registrationLink, 'registrationLink'));
         if (item.flyerUrl) actions.append(externalLink('button secondary', 'View Flyer', item.flyerUrl, 'flyerUrl'));
@@ -260,6 +281,7 @@
           image.loading = 'lazy';
           image.dataset.publicField = 'flyerUrl';
           image.addEventListener('error', () => { image.hidden = true; });
+          if (past) flyer.append(textElement('p', 'historical-note', 'Historical flyer — registration is closed.'));
           flyer.append(image);
           card.append(flyer);
         }
@@ -267,16 +289,27 @@
       }
 
       function showMessage(message, error = false) {
-        list.hidden = true;
+        sections.hidden = true;
         status.hidden = false;
         status.classList.toggle('error', error);
         status.textContent = message;
       }
 
-      function easternToday() {
-        const parts = new Intl.DateTimeFormat('en-US', { timeZone:'America/New_York', year:'numeric', month:'2-digit', day:'2-digit' }).formatToParts(new Date());
-        const value = type => parts.find(part => part.type === type).value;
-        return `${value('year')}-${value('month')}-${value('day')}`;
+      function renderSections(force = false) {
+        const now = easternNow();
+        const entries = publishedClasses.map(item => ({item, display:classify(item, now)}));
+        const signature = entries.map(entry => `${entry.item.publicId}:${entry.display.isPast}`).join('|');
+        if (!force && signature === displayedClassification) return;
+        displayedClassification = signature;
+        const chronological = (a, b) => `${a.item.date}T${a.item.startTime}`.localeCompare(`${b.item.date}T${b.item.startTime}`);
+        const upcoming = entries.filter(entry => !entry.display.isPast).sort((a, b) => Number(a.item.classStatus === 'canceled') - Number(b.item.classStatus === 'canceled') || chronological(a, b));
+        const past = entries.filter(entry => entry.display.isPast).sort((a, b) => -chronological(a, b));
+        list.replaceChildren(...upcoming.map(entry => renderClass(entry.item, entry.display)));
+        pastList.replaceChildren(...past.map(entry => renderClass(entry.item, entry.display)));
+        document.getElementById('upcoming-empty').hidden = upcoming.length > 0;
+        document.getElementById('past-empty').hidden = past.length > 0;
+        status.hidden = true;
+        sections.hidden = false;
       }
 
       async function loadClasses() {
@@ -285,23 +318,16 @@
           if (!response.ok) throw new Error('Feed request failed.');
           const snapshot = await response.json();
           if (!snapshot || snapshot.schemaVersion !== 1 || !Array.isArray(snapshot.classes)) throw new Error('Unsupported feed.');
-          const today = easternToday();
-          const classes = snapshot.classes.map(publicProjection).filter(item => item && (item.classStatus !== 'canceled' || item.date >= today)).sort((a, b) => Number(a.classStatus === 'canceled') - Number(b.classStatus === 'canceled') || `${a.date}T${a.startTime}`.localeCompare(`${b.date}T${b.startTime}`));
-          if (!classes.length) {
-            showMessage('No upcoming classes are currently published. Please check back soon.');
-            return;
-          }
-          list.replaceChildren(...classes.map(renderClass));
-          status.hidden = true;
-          list.hidden = false;
+          publishedClasses = snapshot.classes.map(publicProjection).filter(Boolean);
+          renderSections(true);
         } catch (_) {
-          showMessage('Upcoming class information is temporarily unavailable. Please try again later or contact Peter for current class information.', true);
+          showMessage('Published class information is temporarily unavailable. Please try again later or contact Peter for current class information.', true);
         }
       }
 
       loadClasses();
-      let displayedDay = easternToday();
-      setInterval(() => { const day = easternToday(); if (day !== displayedDay) { displayedDay = day; loadClasses(); } }, 30000);
+      setInterval(() => { if (!sections.hidden) renderSections(); }, 1000);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden && !sections.hidden) renderSections(); });
     })();
   </script>
 </body>

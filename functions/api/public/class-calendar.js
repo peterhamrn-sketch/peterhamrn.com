@@ -1,3 +1,6 @@
+import '../../../classes/public-display.js';
+const { classify } = globalThis.ClassPublicDisplay;
+
 const UPSTREAM_FEED_URL = 'https://test.asm.peterhamrn.com/api/public/classes';
 const UUID = /^[0-9a-f-]{36}$/i;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -24,7 +27,7 @@ function nextDate(value) { const date = new Date(`${value}T12:00:00Z`); date.set
 function stamp() { return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z'); }
 
 function calendar(item) {
-  if (item.classStatus !== undefined && item.classStatus !== 'scheduled') throw new Error('Calendar invitations are closed for this class.');
+  if (!classify(item).calendarAllowed) throw new Error('Calendar invitations are closed for this class.');
   const timed = TIME.test(item.startTime || '') && (!item.endTime || TIME.test(item.endTime));
   const start = timed ? `DTSTART;TZID=America/New_York:${compactDate(item.date)}T${item.startTime.replace(':', '')}00` : `DTSTART;VALUE=DATE:${compactDate(item.date)}`;
   const endTime = item.endTime || item.startTime;
@@ -47,7 +50,7 @@ export async function onRequestGet(context) {
   const snapshot = await response.json();
   const item = Array.isArray(snapshot?.classes) ? snapshot.classes.find(entry => entry.publicId === publicId) : null;
   if (!item || !DATE.test(item.date || '')) return Response.json({ error: 'Published class was not found.' }, { status: 404 });
-  if (item.classStatus !== undefined && item.classStatus !== 'scheduled') return Response.json({ error: 'Registration and calendar downloads are closed for this class.' }, { status: 410, headers: { 'Cache-Control': 'no-store' } });
+  if (!classify(item).calendarAllowed) return Response.json({ error: 'Registration and calendar downloads are closed for this class.' }, { status: 410, headers: { 'Cache-Control': 'no-store' } });
   return new Response(calendar(item), { headers: {
     'Content-Type': 'text/calendar; charset=utf-8',
     'Content-Disposition': `attachment; filename="peterhamrn-class-${compactDate(item.date)}.ics"`,
