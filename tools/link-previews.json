@@ -1,0 +1,135 @@
+[
+  {
+    "file": "apps-automations.html",
+    "url": "https://peterhamrn.com/apps-automations",
+    "title": "Apps & Automations | PeterHamRN.com",
+    "description": "Apps and automations created by Peter Ham, BSN, RN, to simplify scheduling, travel, communication, and everyday work.",
+    "image": "peter-ham.jpg"
+  },
+  {
+    "file": "asm-instructor.html",
+    "url": "https://peterhamrn.com/asm-instructor",
+    "title": "ASM Instructor | PeterHamRN.com",
+    "description": "ASM Instructor is a practical class-management application built for Accident Scene Management instructors.",
+    "image": "asm-instructor.jpg"
+  },
+  {
+    "file": "availability/privacy.html",
+    "url": "https://peterhamrn.com/availability/privacy",
+    "title": "Privacy Policy | Availability",
+    "description": "Read how Availability handles your information and privacy.",
+    "image": "availability.jpg"
+  },
+  {
+    "file": "availability/support.html",
+    "url": "https://peterhamrn.com/availability/support",
+    "title": "Support | Availability",
+    "description": "Get help and contact support for Availability.",
+    "image": "availability.jpg"
+  },
+  {
+    "file": "availability.html",
+    "url": "https://peterhamrn.com/availability",
+    "title": "Availability | PeterHamRN.com",
+    "description": "Availability is a native iPhone app that creates formatted availability from selected calendars, with Apple Shortcuts actions for review or automatic sending.",
+    "image": "availability.jpg"
+  },
+  {
+    "file": "bp-cuff-compare.html",
+    "url": "https://peterhamrn.com/bp-cuff-compare",
+    "title": "BP Compare | PeterHamRN.com",
+    "description": "BP Compare is a native iPhone and iPad app for paired upper-arm and wrist blood-pressure readings, individual cuff differences, and cumulative trends.",
+    "image": "bp-compare.jpg"
+  },
+  {
+    "file": "bpcompare/privacy.html",
+    "url": "https://peterhamrn.com/bpcompare/privacy",
+    "title": "Privacy Policy | BP Compare",
+    "description": "Read how BP Compare handles your information and privacy.",
+    "image": "bp-compare.jpg"
+  },
+  {
+    "file": "bpcompare/support.html",
+    "url": "https://peterhamrn.com/bpcompare/support",
+    "title": "Support | BP Compare",
+    "description": "Get help and contact support for BP Compare.",
+    "image": "bp-compare.jpg"
+  },
+  {
+    "file": "brisket/index.html",
+    "url": "https://peterhamrn.com/brisket/",
+    "title": "Brisket Cookout | September 6, 2026",
+    "description": "Brisket Cookout \u2014 September 6, 2026 at 4:00 PM. RSVP, see what everyone is bringing, and share photos.",
+    "image": "brisket.jpg"
+  },
+  {
+    "file": "class-resources/advanced.html",
+    "url": "https://peterhamrn.com/class-resources/advanced",
+    "title": "ASM Advanced Class Resources | PeterHamRN.com",
+    "description": "Helpful resources following completion of an ASM Advanced class.",
+    "image": "classes.jpg"
+  },
+  {
+    "file": "class-resources/basic.html",
+    "url": "https://peterhamrn.com/class-resources/basic",
+    "title": "ASM Basic Class Resources | PeterHamRN.com",
+    "description": "Helpful resources following completion of an ASM Basic class.",
+    "image": "classes.jpg"
+  },
+  {
+    "file": "classes/index.html",
+    "url": "https://classes.peterhamrn.com/classes/",
+    "title": "Motorcycle Accident Scene Management Classes | PeterHamRN",
+    "description": "Learn how to respond to motorcycle accidents. View upcoming Basic and Advanced Accident Scene Management classes in Myrtle Beach, SC.",
+    "image": "classes.jpg"
+  },
+  {
+    "file": "contact.html",
+    "url": "https://peterhamrn.com/contact",
+    "title": "Contact Peter Ham, BSN, RN | PeterHamRN.com",
+    "description": "Connect with Peter Ham, BSN, RN \u2014 Peter Ham Solutions. Save contact details, call, text, or email.",
+    "image": "peter-ham.jpg"
+  },
+  {
+    "file": "macremote.html",
+    "url": "https://peterhamrn.com/macremote",
+    "title": "MacRemote | PeterHamRN.com",
+    "description": "MacRemote is a native iPhone control panel for selected Mac workflows and live status.",
+    "image": "macremote.jpg"
+  },
+  {
+    "file": "recovery-tags/index.html",
+    "url": "https://peterhamrn.com/recovery-tags/",
+    "title": "Recovery Tags | Coming Soon",
+    "description": "Recovery Tags make it easy for someone who finds your lost keys, bag, or other item to contact you with a simple phone tap.",
+    "image": "recovery-tags.jpg"
+  },
+  {
+    "file": "recovery-tags/privacy.html",
+    "url": "https://peterhamrn.com/recovery-tags/privacy",
+    "title": "Privacy | Recovery Tags",
+    "description": "Read how Recovery Tags handles your information and privacy.",
+    "image": "recovery-tags.jpg"
+  },
+  {
+    "file": "recovery-tags/terms.html",
+    "url": "https://peterhamrn.com/recovery-tags/terms",
+    "title": "Terms | Recovery Tags",
+    "description": "Read the terms for using Recovery Tags from Peter Ham Solutions.",
+    "image": "recovery-tags.jpg"
+  },
+  {
+    "file": "resources.html",
+    "url": "https://peterhamrn.com/resources",
+    "title": "Resources | PeterHamRN.com",
+    "description": "Motorcycle safety, trauma response, rider education, and instructor resources selected by Peter Ham, BSN, RN.",
+    "image": "peter-ham.jpg"
+  },
+  {
+    "file": "ride-connected.html",
+    "url": "https://peterhamrn.com/ride-connected",
+    "title": "Ride Connected | PeterHamRN.com",
+    "description": "Ride Connected is an iPhone motorcycle automation project in development and real-world testing.",
+    "image": "ride-connected.jpg"
+  }
+]
