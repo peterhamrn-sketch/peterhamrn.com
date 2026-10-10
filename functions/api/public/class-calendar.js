@@ -24,6 +24,7 @@ function nextDate(value) { const date = new Date(`${value}T12:00:00Z`); date.set
 function stamp() { return new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z'); }
 
 function calendar(item) {
+  if (item.classStatus !== undefined && item.classStatus !== 'scheduled') throw new Error('Calendar invitations are closed for this class.');
   const timed = TIME.test(item.startTime || '') && (!item.endTime || TIME.test(item.endTime));
   const start = timed ? `DTSTART;TZID=America/New_York:${compactDate(item.date)}T${item.startTime.replace(':', '')}00` : `DTSTART;VALUE=DATE:${compactDate(item.date)}`;
   const endTime = item.endTime || item.startTime;
@@ -41,15 +42,16 @@ function calendar(item) {
 export async function onRequestGet(context) {
   const publicId = new URL(context.request.url).searchParams.get('publication') || '';
   if (!UUID.test(publicId)) return Response.json({ error: 'A valid class publication ID is required.' }, { status: 400 });
-  const response = await fetch(UPSTREAM_FEED_URL, { headers: { Accept: 'application/json' }, cf: { cacheTtl: 60, cacheEverything: true } });
+  const response = await fetch(UPSTREAM_FEED_URL, { headers: { Accept: 'application/json' }, cache: 'no-store', cf: { cacheTtl: 0, cacheEverything: false } });
   if (!response.ok) return Response.json({ error: 'Published class information is temporarily unavailable.' }, { status: 502 });
   const snapshot = await response.json();
   const item = Array.isArray(snapshot?.classes) ? snapshot.classes.find(entry => entry.publicId === publicId) : null;
   if (!item || !DATE.test(item.date || '')) return Response.json({ error: 'Published class was not found.' }, { status: 404 });
+  if (item.classStatus !== undefined && item.classStatus !== 'scheduled') return Response.json({ error: 'Registration and calendar downloads are closed for this class.' }, { status: 410, headers: { 'Cache-Control': 'no-store' } });
   return new Response(calendar(item), { headers: {
     'Content-Type': 'text/calendar; charset=utf-8',
     'Content-Disposition': `attachment; filename="peterhamrn-class-${compactDate(item.date)}.ics"`,
-    'Cache-Control': 'public, max-age=60',
+    'Cache-Control': 'no-store',
     'X-Content-Type-Options': 'nosniff'
   } });
 }
