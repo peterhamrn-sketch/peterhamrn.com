@@ -32,7 +32,7 @@
     .status.error{border-color:#e1b7b7;color:var(--danger)}
     .class-list{display:grid;gap:22px}
     .class-card{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:26px;padding:26px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 7px 22px rgba(8,35,71,.09)}
-    .completed-badge{display:inline-block;background:#16723c;color:#fff;font-weight:900;letter-spacing:.08em;padding:9px 15px;border-radius:8px;margin-bottom:15px}.class-section-heading{font-size:30px;color:var(--navy);margin:0 0 20px}.past-classes{margin-top:46px}.historical-note{color:var(--muted);font-size:14px;line-height:1.5}
+    .past-badge{display:inline-block;background:#e5e7eb;color:#374151;font-weight:900;letter-spacing:.08em;padding:9px 15px;border-radius:8px;margin-bottom:15px}.completed-badge{display:inline-block;background:#16723c;color:#fff;font-weight:900;letter-spacing:.08em;padding:9px 15px;border-radius:8px;margin-bottom:15px}.class-section-heading{font-size:30px;color:var(--navy);margin:0 0 20px}.past-classes{margin-top:46px}.historical-note{color:var(--muted);font-size:14px;line-height:1.5}
     .canceled-badge{display:inline-block;background:#b91c1c;color:#fff;font-weight:900;letter-spacing:.08em;padding:9px 15px;border-radius:8px;margin-bottom:15px}.cancellation-notice{color:#8f2424;font-weight:700;white-space:pre-line}.registration-closed{background:#fbeaea;color:#8f2424}
     .class-card.no-flyer{grid-template-columns:1fr}
     .class-card h2{font-size:clamp(25px,4vw,34px);line-height:1.15;margin:0 0 15px;color:var(--navy)}
@@ -93,7 +93,7 @@
           </section>
           <section class="past-classes" aria-labelledby="past-heading">
             <h2 id="past-heading" class="class-section-heading">Past Classes</h2>
-            <p class="historical-note">COMPLETED means the scheduled end time has passed; it does not confirm attendance or course completion.</p>
+            <p class="historical-note">COMPLETED is set by the instructor. PAST CLASS means the scheduled end time has passed without a Completed status.</p>
             <div id="past-empty" class="status" hidden>No past classes are currently published.</div>
             <div id="past-class-list" class="class-list"></div>
           </section>
@@ -163,7 +163,7 @@
         if (item.endTime && item.endTime <= item.startTime) return null;
         if (typeof item.location !== 'string' || !item.location.trim()) return null;
         item.registrationLink = safeHttpsUrl(item.registrationLink);
-        if (!['scheduled', 'canceled'].includes(item.classStatus)) return null;
+        if (!['scheduled', 'completed', 'canceled'].includes(item.classStatus)) return null;
         if (typeof item.cancellationReason !== 'string') return null;
         if (item.classStatus === 'scheduled' && !item.registrationLink) return null;
         if (item.publicDescription == null) item.publicDescription = '';
@@ -245,7 +245,8 @@
 
         const content = document.createElement('div');
         if (canceled) content.append(textElement('span', 'canceled-badge', 'CANCELED', 'displayStatus'));
-        else if (past) content.append(textElement('span', 'completed-badge', 'COMPLETED', 'displayStatus'));
+        else if (display.displayStatus === 'completed') content.append(textElement('span', 'completed-badge', 'COMPLETED', 'displayStatus'));
+        else if (past) content.append(textElement('span', 'past-badge', 'PAST CLASS', 'displayStatus'));
         content.append(textElement('h2', '', item.classType, 'classType'));
         const metadata = document.createElement('div');
         metadata.className = 'class-meta';
@@ -260,7 +261,7 @@
         if (canceled) content.append(textElement('p', 'cancellation-notice', item.cancellationReason.trim() || 'This class has been canceled. Registration is closed.', 'cancellationReason'));
         const actions = document.createElement('div');
         actions.className = 'actions';
-        if (canceled || past) {
+        if (!display.calendarAllowed) {
           actions.append(textElement('span', 'button registration-closed', 'Registration Closed'));
           if (past && !canceled && item.flyerUrl) actions.append(externalLink('button secondary', 'Historical Flyer', item.flyerUrl, 'flyerUrl'));
         } else {
@@ -281,7 +282,7 @@
           image.loading = 'lazy';
           image.dataset.publicField = 'flyerUrl';
           image.addEventListener('error', () => { image.hidden = true; });
-          if (past) flyer.append(textElement('p', 'historical-note', 'Historical flyer — registration is closed.'));
+          if (past || item.classStatus === 'completed') flyer.append(textElement('p', 'historical-note', past ? 'Historical flyer — registration is closed.' : 'Class marked Completed — registration is closed.'));
           flyer.append(image);
           card.append(flyer);
         }

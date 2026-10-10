@@ -15,7 +15,7 @@
   const end=`${item.date}T${item.endTime?item.endTime+':00':'24:00:00'}`;
   const isPast=now>=end;
   const status=item.classStatus===undefined?'scheduled':item.classStatus;
-  return {isPast,displayStatus:status==='canceled'?'canceled':isPast?'completed':'scheduled',calendarAllowed:status==='scheduled'&&!isPast};
+  return {isPast,displayStatus:status==='canceled'?'canceled':status==='completed'?'completed':isPast?'past':'scheduled',calendarAllowed:status==='scheduled'&&!isPast};
  }
  root.ClassPublicDisplay=Object.freeze({easternNow,classify});
 })(globalThis);
