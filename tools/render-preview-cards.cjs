@@ -21,15 +21,18 @@ function base(content) {
 (async () => {
   const out = path.join(root, 'images/previews');
   fs.mkdirSync(out, {recursive:true});
-  for (const [name, file, title, subtitle] of cards) {
+  for (const [name, file, title, subtitle] of (process.argv.includes('--classes-only') ? [] : cards)) {
     const art = await sharp(path.join(root, file)).resize(390, 400, {fit:'contain', background:'#061d3c'}).png().toBuffer();
     const titleY = title.length > 1 ? 190 : 225;
     const text = title.map((line,i)=>`<text x="492" y="${titleY+i*65}" font-size="${line.length > 17 ? 48 : 56}" font-weight="700" fill="white">${esc(line)}</text>`).join('') +
       subtitle.map((line,i)=>`<text x="492" y="${titleY+title.length*65+35+i*40}" font-size="28" fill="#c6e1ff">${esc(line)}</text>`).join('');
     await sharp(base(text)).composite([{input:art,left:52,top:95}]).jpeg({quality:88,mozjpeg:true}).toFile(path.join(out,name+'.jpg'));
   }
-  const art = await sharp(path.join(root,'images/class-resources/asm-basic-banner.png')).resize(1096,365,{fit:'contain',background:'#061d3c'}).png().toBuffer();
+  // Remove only the source banner's white padding after the original resize.
+  // Keep the artwork at its original position and scale over the card gradient.
+  const padded = await sharp(path.join(root,'images/class-resources/asm-basic-banner.png')).resize(1096,365,{fit:'contain',background:'#061d3c'}).png().toBuffer();
+  const art = await sharp(padded).extract({left:0,top:68,width:1096,height:230}).png().toBuffer();
   const text='<text x="52" y="463" fill="white" font-size="44" font-weight="700">Motorcycle Accident Scene Management</text><text x="52" y="510" fill="#c6e1ff" font-size="30">Basic &amp; Advanced Classes · Myrtle Beach, SC</text>';
-  await sharp(base(text)).composite([{input:art,left:52,top:48}]).jpeg({quality:88,mozjpeg:true}).toFile(path.join(out,'classes.jpg'));
-  console.log('Created nine 1200 × 630 JPEG preview cards.');
+  await sharp(base(text)).composite([{input:art,left:52,top:116}]).jpeg({quality:88,mozjpeg:true}).toFile(path.join(out,'classes-v2.jpg'));
+  console.log('Preview cards rendered (1200 × 630).');
 })();
