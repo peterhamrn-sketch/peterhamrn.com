@@ -1,0 +1,34 @@
+{
+  "name": "peterhamrn-little-mini-scheduler",
+  "main": "scheduler.js",
+  "account_id": "f68ca29910317d16fb13f09166da2acb",
+  "compatibility_date": "2026-10-11",
+  "workers_dev": false,
+  "preview_urls": false,
+  "d1_databases": [
+    {
+      "binding": "LITTLE_MINI_DB",
+      "database_name": "peterhamrn-little-mini",
+      "database_id": "8eea1435-8fca-4f48-bcc8-ae4e561d637a"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "WEEKLY_RELEASE",
+        "class_name": "WeeklyRelease"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1-weekly-release",
+      "new_sqlite_classes": [
+        "WeeklyRelease"
+      ]
+    }
+  ],
+  "triggers": {
+    "crons": []
+  }
+}
