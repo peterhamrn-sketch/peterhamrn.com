@@ -16,9 +16,13 @@ export const easternLabel=value=>value?new Intl.DateTimeFormat('en-US',{timeZone
 export const statusLabel=value=>({draft:'Draft',scheduled:'Scheduled',held:'On Hold',published:'Published'}[value]||value);
 export const chapterStatusLabel=c=>c.status==='draft'&&!c.scheduled_at&&c.draft_revision&&c.approved_revision===c.draft_revision?'Approved, Unscheduled':statusLabel(c.status);
 export async function publishDue(db,now=new Date().toISOString()){
- const publicationDate=easternInput(now).slice(0,10);
+ const publicationDate=easternInput(now).slice(0,10),event=crypto.randomUUID();
  // Only the exact approved saved revision may release. Draft saves invalidate this pointer.
  return db.batch([
+  db.prepare(`INSERT OR IGNORE INTO mini_publication_outbox(chapter_id,event_id,kind,number,title,path,published_at,updated_at)
+   SELECT c.id,'little-mini-chapter-'||c.number||'-'||?,c.kind,c.number,c.title,c.path,?,? FROM mini_chapters c
+   JOIN mini_release_queue q ON q.chapter_id=c.id JOIN mini_revisions r ON r.id=q.approved_revision AND r.chapter_id=c.id
+   WHERE c.status='scheduled' AND q.scheduled_at<=? AND q.approved_revision=c.draft_revision AND trim(r.source)!=''`).bind(event,now,now,now),
   db.prepare(`UPDATE mini_chapters SET status='published',published_revision=draft_revision,draft_revision=NULL,
    publication_date=?,version=version+1,modified_at=?
    WHERE status='scheduled' AND EXISTS(
@@ -74,6 +78,9 @@ export async function releaseAction(db,input,prepareAlarm){
    ON CONFLICT(chapter_id) DO UPDATE SET scheduled_at=excluded.scheduled_at,approved_revision=excluded.approved_revision,published_at=excluded.published_at`).bind(c.id,scheduled,revision,input.action==='publish-now'?now:null,event));
   const publish=input.action==='publish-now';
   stmts.push(db.prepare(`UPDATE mini_chapters SET status=?,version=version+1,modified_at=?${publish?',published_revision=?,draft_revision=NULL,publication_date=?':releasing?',draft_revision=?':''} WHERE id=? AND EXISTS(SELECT 1 FROM mini_release_events WHERE id=?)`).bind(state,now,...(publish?[revision,easternInput(now).slice(0,10)]:releasing?[revision]:[]),c.id,event));
+  if(publish)stmts.push(db.prepare(`INSERT OR IGNORE INTO mini_publication_outbox(chapter_id,event_id,kind,number,title,path,published_at,updated_at)
+   SELECT id,'little-mini-chapter-'||number||'-'||?,kind,number,title,path,?,? FROM mini_chapters
+   WHERE id=? AND status='published' AND EXISTS(SELECT 1 FROM mini_release_events WHERE id=?)`).bind(event,now,now,c.id,event));
  }
  const results=await db.batch(stmts);if(!results[0].meta?.changes)throw Error('The chapter changed in another session. Reload before retrying.');
  return {ok:true,action:input.action,ids,scheduled_at:when};

@@ -1,4 +1,5 @@
 import {DurableObject} from 'cloudflare:workers';
+import {dispatchAutomaticAnnouncements} from '../../functions/_mini/notifications.js';
 import {publishDue,releaseAction} from '../../functions/_mini/scheduling.js';
 
 // Preserve the existing class, namespace and named instance, including its stored alarm.
@@ -30,8 +31,10 @@ export class WeeklyRelease extends DurableObject {
  }
  async fetch(request){
   const path=new URL(request.url).pathname;
+  if(path==='/notify'&&request.method==='POST'){const input=await request.json();return Response.json(await dispatchAutomaticAnnouncements(this.env,input.event_id,true));}
+  let published=false;
   if(request.method!=='POST'||!['/initialize','/reconcile','/release'].includes(path))return new Response('Not found',{status:404});
-  return this.ctx.blockConcurrencyWhile(async()=>{
+  const response=await this.ctx.blockConcurrencyWhile(async()=>{
    let result={},previousAlarm=null,alarmPrepared=false;
    try{
     if(path==='/release')result=await releaseAction(this.env.LITTLE_MINI_DB,await request.json(),async plan=>{
@@ -44,6 +47,7 @@ export class WeeklyRelease extends DurableObject {
      const safeAlarm=previousAlarm===null?candidate:candidate===null?previousAlarm:Math.min(previousAlarm,candidate);
      if(safeAlarm!==null&&safeAlarm!==previousAlarm)await this.ctx.storage.setAlarm(Math.max(safeAlarm,Date.now()+1));
     });
+    published=result.ok&&result.action==='publish-now';
     const alarm=await this.reconcile();
     return Response.json({...result,...alarm,initialized:path==='/initialize'});
    }catch(error){
@@ -55,9 +59,11 @@ export class WeeklyRelease extends DurableObject {
     return Response.json({error:error.message||String(error)},{status:400});
    }
   });
+  if(published)this.ctx.waitUntil(dispatchAutomaticAnnouncements(this.env).catch(error=>this.ctx.storage.put('last_email_error',String(error))));
+  return response;
  }
  async alarm(){
-  return this.ctx.blockConcurrencyWhile(async()=>{
+  await this.ctx.blockConcurrencyWhile(async()=>{
    const now=new Date().toISOString();
    try{
     await publishDue(this.env.LITTLE_MINI_DB,now);
@@ -69,12 +75,13 @@ export class WeeklyRelease extends DurableObject {
     throw error;
    }
   });
+  try{await dispatchAutomaticAnnouncements(this.env);}catch(error){await this.ctx.storage.put('last_email_error',String(error));}
  }
 }
 export default {
  async fetch(request,env){
   const url=new URL(request.url),path=url.pathname;
-  const internal=url.hostname==='internal'&&['/reconcile','/release'].includes(path);
+  const internal=url.hostname==='internal'&&['/reconcile','/release','/notify'].includes(path);
   const setup=path==='/initialize'&&env.LITTLE_MINI_SETUP_SECRET&&request.headers.get('Authorization')==='Bearer '+env.LITTLE_MINI_SETUP_SECRET;
   if(request.method!=='POST'||(!internal&&!setup))return new Response('Not found',{status:404});
   return env.WEEKLY_RELEASE.get(env.WEEKLY_RELEASE.idFromName('little-mini-weekly-release')).fetch(request);
