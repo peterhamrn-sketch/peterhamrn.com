@@ -1,6 +1,6 @@
 import {markdown,shell,esc} from '../../tools/little-mini/render.mjs';
 import {chapterNavigation} from '../../tools/little-mini/navigation.mjs';
-import manifest from '../../tools/little-mini/project.json' with {type:'json'};
+import manifest from '../../tools/little-mini/project.json';
 export const launchPaths=new Set(manifest.chapters.map(c=>`/little-mini/${c.kind}/${c.slug}/`));
 export function renderSource(source){
  // Preserve the exact historical file in revision source. This prefix is archive status metadata.
