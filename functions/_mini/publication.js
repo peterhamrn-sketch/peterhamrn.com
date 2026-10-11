@@ -1,6 +1,7 @@
 import {markdown,shell,esc} from '../../tools/little-mini/render.mjs';
 import {chapterNavigation} from '../../tools/little-mini/navigation.mjs';
 import manifest from '../../tools/little-mini/project.json';
+const companionNumbers={'story-5':[5,6,7],'story-6':[8],'manual-5':[5],'manual-6':[5]};
 export const launchPaths=new Set(manifest.chapters.map(c=>`/little-mini/${c.kind}/${c.slug}/`));
 export function renderSource(source){
  // Preserve the exact historical file in revision source. This prefix is archive status metadata.
@@ -13,6 +14,6 @@ export function newChapterPage(c){
 }
 export async function publishedChapters(db){
  const rows=(await db.prepare("SELECT id,kind,number,title,path,publication_date FROM mini_chapters WHERE status='published' AND published_revision IS NOT NULL ORDER BY kind,number").all()).results||[];
- return rows.map(c=>({...c,slug:c.path.split('/').filter(Boolean).at(-1),related:manifest.chapters.find(m=>m.id===c.id)?.related||rows.filter(r=>r.kind!==c.kind&&r.number===c.number).map(r=>r.id)}));
+ return rows.map(c=>({...c,slug:c.path.split('/').filter(Boolean).at(-1),related:companionNumbers[`${c.kind}-${c.number}`]?rows.filter(r=>r.kind!==c.kind&&companionNumbers[`${c.kind}-${c.number}`].includes(r.number)).map(r=>r.id):manifest.chapters.find(m=>m.id===c.id)?.related||rows.filter(r=>r.kind!==c.kind&&r.number===c.number).map(r=>r.id)}));
 }
 export function navigation(c,published){return chapterNavigation(published.find(p=>p.id===c.id)||c,published);}

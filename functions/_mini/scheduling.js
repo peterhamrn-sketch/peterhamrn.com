@@ -12,6 +12,7 @@ export function easternToUTC(value){
 }
 export const easternLabel=value=>value?new Intl.DateTimeFormat('en-US',{timeZone:ZONE,dateStyle:'full',timeStyle:'short'}).format(new Date(value))+' Eastern':'Not scheduled';
 export const statusLabel=value=>({draft:'Draft',scheduled:'Scheduled',held:'On Hold',published:'Published'}[value]||value);
+export const chapterStatusLabel=c=>c.status==='draft'&&!c.scheduled_at&&c.draft_revision&&c.approved_revision===c.draft_revision?'Approved, Unscheduled':statusLabel(c.status);
 export async function publishDue(db,now=new Date().toISOString()){
  const publicationDate=easternInput(now).slice(0,10);
  // Only the exact approved saved revision may release. Draft saves invalidate this pointer.
