@@ -40,8 +40,9 @@ activations send announcements automatically. The existing Little Mini opening
 installment has one entry for its paired story/manual release. Recovery Tags
 has no announcement entry until an actual update is published.
 
-After the update is deployed, the administrator selects it and clicks Prepare,
-then Send next 25 until no pending recipients remain. Prepare freezes the
+After the update is deployed, the administrator finds its announcement card,
+clicks Prepare email for the displayed subscriber count, then Send announcement
+until no emails remain waiting to send. Lists larger than 25 use multiple batches. Prepare freezes the
 currently confirmed audience atomically and is idempotent. No late subscriber
 is added to an earlier announcement. Each update/email pair has one durable
 delivery record and one Resend idempotency key. Sending checks the current
@@ -63,3 +64,9 @@ No scheduling service or extra subscription vendor is introduced. Announcement
 delivery is an explicit administrator action after publication, not an automatic
 publication hook. No tests, builds, migrations, email sends, or deployment
 verification were run as part of implementation unless separately reported.
+
+Announcement emails include a readable HTML version and a plain-text fallback.
+Optional `summary` and `buttonLabel` publication fields customize the introduction
+and link label without changing update IDs or delivery history. Subscriber email
+cells use Cloudflare email-off markers so authenticated administrators see the
+actual address without relying on a browser decoding script.
