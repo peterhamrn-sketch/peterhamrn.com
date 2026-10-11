@@ -54,11 +54,10 @@ controls. A future cron publisher must not change another installment's date whe
 Publish Now is used. No changes to existing functions or databases were made for
 this launch.
 
-The Official Little Mini Fan Club remains Coming Soon. Existing Resend code is for
-Recovery Tags authentication messages; a dedicated opt-in subscription workflow
-has not been configured. No email addresses are collected and no announcement or
-subscription email is sent by this release. Activate signup separately while
-preserving existing subscription data.
+The Official Little Mini Fan Club now links to the shared topic-specific
+subscription flow. Apply `functions/_recovery/subscriptions.sql` before
+deploying the signup buttons. See `docs/subscriptions.md` for configuration
+and announcement handling.
 
 ## Release evidence
 
