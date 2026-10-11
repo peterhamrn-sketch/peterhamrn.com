@@ -7,7 +7,8 @@ export function easternInput(value){
 export function easternToUTC(value){
  if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value))throw Error('Choose a date and time in America/New_York.');
  const candidates=[4,5].map(h=>new Date(value+':00Z').valueOf()+h*3600000).filter(ms=>Number.isFinite(ms)&&easternInput(ms)===value);
- if(candidates.length!==1)throw Error('This Eastern time is invalid or ambiguous at a daylight saving change. Choose a different time.');
+ if(!candidates.length)throw Error('This date/time does not exist in Eastern Time, including during the spring daylight saving jump. Choose a valid time.');
+ if(candidates.length>1)throw Error('This Eastern time occurs twice when daylight saving time ends. Choose a time outside the repeated hour.');
  return new Date(candidates[0]).toISOString();
 }
 export const easternLabel=value=>value?new Intl.DateTimeFormat('en-US',{timeZone:ZONE,dateStyle:'full',timeStyle:'short'}).format(new Date(value))+' Eastern':'Not scheduled';
@@ -38,9 +39,9 @@ export async function releaseAction(db,input){
  if(rows.length===2&&(rows[0].number!==rows[1].number||rows[0].kind===rows[1].kind))throw Error('Pair controls require matching story and manual chapter numbers.');
  if(rows.some(c=>!Number.isSafeInteger(input.versions?.[c.id])||input.versions[c.id]!==c.version))throw Error('A chapter changed. Reload before changing its release.');
  const now=new Date().toISOString();let when=null;
- if(input.action==='schedule') {when=weeklyWindow(input.when);if(when<=now)throw Error('Choose a future date, or use Publish Now.');}
+ if(input.action==='schedule') {when=easternToUTC(input.when);if(when<=now)throw Error('Choose a future date, or use Publish Now.');}
  if(['schedule','publish-now'].includes(input.action)){
-  if(input.approved!==true)throw Error('Confirm the saved manuscripts are reviewed, complete, and factually/technically verified.');
+  if(rows.some(c=>!c.approved_revision||c.approved_revision!==c.draft_revision))throw Error('The saved manuscript must be approved before scheduling or publishing. Edits and restored revisions require approval again.');
   for(const c of rows){const r=await db.prepare('SELECT source FROM mini_revisions WHERE id=? AND chapter_id=?').bind(c.draft_revision,c.id).first();if(!r?.source.trim())throw Error('Save a complete manuscript draft before scheduling or publishing.');}
  }
  if(input.action==='resume'&&rows.some(c=>c.status!=='held'||!c.scheduled_at||c.scheduled_at<=now||!c.approved_revision||c.approved_revision!==c.draft_revision))throw Error('Resume requires a held, unchanged approved draft and a future saved date. Reschedule if the date passed or text changed.');
@@ -62,12 +63,6 @@ export async function releaseAction(db,input){
  return {ok:true,action:input.action,ids,scheduled_at:when};
 }
 
-export function weeklyWindow(value){
- const utc=easternToUTC(value);
- const date=new Date(value+':00Z');
- if(date.getUTCDay()!==6||!value.endsWith('T09:00'))throw Error('Automatic publication supports Saturdays at 9:00 a.m. Eastern only. Choose that weekly window or use Publish Now.');
- return utc;
-}
 export function nextWeeklyWindow(now=Date.now()){
  const local=easternInput(now),date=new Date(local.slice(0,10)+'T12:00:00Z');
  date.setUTCDate(date.getUTCDate()+(6-date.getUTCDay()+7)%7);
