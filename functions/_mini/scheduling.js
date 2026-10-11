@@ -1,3 +1,4 @@
+import {renderSource,publicationSource} from './manuscript.js';
 export const ZONE='America/New_York';
 export function easternInput(value){
  if(!value)return '';
@@ -29,7 +30,7 @@ export async function publishDue(db,now=new Date().toISOString()){
    AND c.published_revision=mini_release_queue.approved_revision)`).bind(now)
  ]);
 }
-export async function releaseAction(db,input){
+export async function releaseAction(db,input,prepareAlarm){
  if(!['schedule','publish-now','hold','resume'].includes(input.action))throw Error('Unknown release action.');
  const ids=input.ids;
  if(!Array.isArray(ids)||ids.length<1||ids.length>2||new Set(ids).size!==ids.length||ids.some(id=>typeof id!=='string'))throw Error('Choose one chapter or its matching pair.');
@@ -40,24 +41,39 @@ export async function releaseAction(db,input){
  if(rows.some(c=>!Number.isSafeInteger(input.versions?.[c.id])||input.versions[c.id]!==c.version))throw Error('A chapter changed. Reload before changing its release.');
  const now=new Date().toISOString();let when=null;
  if(input.action==='schedule') {when=easternToUTC(input.when);if(when<=now)throw Error('Choose a future date, or use Publish Now.');}
- if(['schedule','publish-now'].includes(input.action)){
-  if(rows.some(c=>!c.approved_revision||c.approved_revision!==c.draft_revision))throw Error('The saved manuscript must be approved before scheduling or publishing. Edits and restored revisions require approval again.');
-  for(const c of rows){const r=await db.prepare('SELECT source FROM mini_revisions WHERE id=? AND chapter_id=?').bind(c.draft_revision,c.id).first();if(!r?.source.trim())throw Error('Save a complete manuscript draft before scheduling or publishing.');}
+ const releasing=['schedule','publish-now'].includes(input.action),revisions=new Map();
+ if(releasing){
+  if(!ids.includes(input.selected_id)||typeof input.source!=='string'||!input.source.trim()||input.source.length>150000||!publicationSource(input.source).trim())throw Error('Provide the selected chapter and its complete current manuscript.');
+  for(const c of rows){
+   const saved=await db.prepare('SELECT source FROM mini_revisions WHERE id=? AND chapter_id=?').bind(c.draft_revision,c.id).first();
+   if(c.id===input.selected_id){
+    // Unchanged reschedules keep the same approved revision; edits append immutable history.
+    const changed=!saved||saved.source!==input.source;
+    revisions.set(c.id,{id:changed?crypto.randomUUID():c.draft_revision,source:input.source,changed,html:changed?renderSource(input.source):null});
+   }else{
+    // Pair actions use only a companion's already-approved saved revision, never editor buffers.
+    if(!saved||!c.approved_revision||c.approved_revision!==c.draft_revision||!publicationSource(saved.source).trim())throw Error('The companion must have an approved saved manuscript. Schedule or publish its edits explicitly from its own editor first.');
+    revisions.set(c.id,{id:c.approved_revision,changed:false});
+   }
+  }
  }
  if(input.action==='resume'&&rows.some(c=>c.status!=='held'||!c.scheduled_at||c.scheduled_at<=now||!c.approved_revision||c.approved_revision!==c.draft_revision))throw Error('Resume requires a held, unchanged approved draft and a future saved date. Reschedule if the date passed or text changed.');
+ if(prepareAlarm)await prepareAlarm({rows,action:input.action,when});
  const event=crypto.randomUUID();
  // Claim the whole operation only if every chapter still has the loaded version.
  const guard=rows.map(()=>'(id=? AND version=? AND status!=\'published\')').join(' OR ');
  const guardArgs=rows.flatMap(c=>[c.id,c.version]);
  const stmts=[db.prepare(`INSERT INTO mini_release_events(id,action,chapter_ids,created_at) SELECT ?,?,?,? WHERE (SELECT COUNT(*) FROM mini_chapters WHERE ${guard})=?`).bind(event,input.action,JSON.stringify(ids),now,...guardArgs,rows.length)];
  for(const c of rows){
-  const revision=['schedule','publish-now'].includes(input.action)?c.draft_revision:c.approved_revision;
+  const revision=releasing?revisions.get(c.id).id:c.approved_revision;
+  const savedRevision=revisions.get(c.id);
+  if(savedRevision?.changed)stmts.push(db.prepare("INSERT INTO mini_revisions(id,chapter_id,source,html,action,created_at) SELECT ?,?,?,?,'draft',? WHERE EXISTS(SELECT 1 FROM mini_release_events WHERE id=?)").bind(revision,c.id,savedRevision.source,savedRevision.html,now,event));
   const scheduled=input.action==='schedule'?when:c.scheduled_at;
   const state={schedule:'scheduled','publish-now':'published',hold:'held',resume:'scheduled'}[input.action];
   stmts.push(db.prepare(`INSERT INTO mini_release_queue(chapter_id,scheduled_at,approved_revision,published_at) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM mini_release_events WHERE id=?)
    ON CONFLICT(chapter_id) DO UPDATE SET scheduled_at=excluded.scheduled_at,approved_revision=excluded.approved_revision,published_at=excluded.published_at`).bind(c.id,scheduled,revision,input.action==='publish-now'?now:null,event));
   const publish=input.action==='publish-now';
-  stmts.push(db.prepare(`UPDATE mini_chapters SET status=?,version=version+1,modified_at=?${publish?',published_revision=?,draft_revision=NULL,publication_date=?':''} WHERE id=? AND EXISTS(SELECT 1 FROM mini_release_events WHERE id=?)`).bind(state,now,...(publish?[revision,easternInput(now).slice(0,10)]:[]),c.id,event));
+  stmts.push(db.prepare(`UPDATE mini_chapters SET status=?,version=version+1,modified_at=?${publish?',published_revision=?,draft_revision=NULL,publication_date=?':releasing?',draft_revision=?':''} WHERE id=? AND EXISTS(SELECT 1 FROM mini_release_events WHERE id=?)`).bind(state,now,...(publish?[revision,easternInput(now).slice(0,10)]:releasing?[revision]:[]),c.id,event));
  }
  const results=await db.batch(stmts);if(!results[0].meta?.changes)throw Error('The chapter changed in another session. Reload before retrying.');
  return {ok:true,action:input.action,ids,scheduled_at:when};

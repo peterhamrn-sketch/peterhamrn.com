@@ -1,4 +1,4 @@
-import {publishedChapters,navigation,launchPaths} from '../_mini/publication.js';
+import {publishedChapters,navigation,launchPaths,renderSource} from '../_mini/publication.js';
 import {esc} from '../../tools/little-mini/render.mjs';
 const notFound=()=>new Response('Not found',{status:404,headers:{'Cache-Control':'no-store','X-Robots-Tag':'noindex'}});
 export async function onRequest({request,env,next}){
@@ -15,14 +15,14 @@ export async function onRequest({request,env,next}){
    if(request.method==='HEAD')return new Response(null,{headers:response.headers});
    return new HTMLRewriter().on('#story .chapter-list',{element(e){e.setInnerContent(list('story'),{html:true})}}).on('#manual .chapter-list',{element(e){e.setInnerContent(list('manual'),{html:true})}}).transform(response);
   }
-  const chapter=await db.prepare('SELECT c.id,c.kind,c.number,c.title,c.status,c.page_html,c.publication_date,r.html FROM mini_chapters c LEFT JOIN mini_revisions r ON r.id=c.published_revision AND r.chapter_id=c.id WHERE c.path=?').bind(path).first();
+  const chapter=await db.prepare('SELECT c.id,c.kind,c.number,c.title,c.status,c.page_html,c.publication_date,r.source FROM mini_chapters c LEFT JOIN mini_revisions r ON r.id=c.published_revision AND r.chapter_id=c.id WHERE c.path=?').bind(path).first();
   if(!chapter)return launchPaths.has(path)?next():notFound();
-  if(chapter.status!=='published'||chapter.html==null)return notFound();
+  if(chapter.status!=='published'||chapter.source==null)return notFound();
   const chapters=await publishedChapters(db);
   const response=new Response(chapter.page_html,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
   if(request.method==='HEAD')return new Response(null,{headers:response.headers});
   const publicationDate=chapter.publication_date;
-  return new HTMLRewriter().on('div.manuscript',{element(e){e.setInnerContent(chapter.html,{html:true})}})
+  return new HTMLRewriter().on('div.manuscript',{element(e){e.setInnerContent(renderSource(chapter.source),{html:true})}})
    .on('div.reading-navigation',{element(e){e.replace(navigation(chapter,chapters),{html:true})}})
    .on('.mini-publication-date',{element(e){e.setInnerContent(`Published <time datetime="${esc(publicationDate)}">${esc(publicationDate)}</time>`,{html:true})}}).transform(response);
  }catch{return home||launchPaths.has(path)?next():notFound()}

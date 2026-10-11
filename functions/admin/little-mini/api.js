@@ -31,28 +31,15 @@ export async function onRequest({request,env}){
   ]);return json({ok:true,id:chapterId});
  }
  if(input.action==='preview')return json({html:rendered});
- if(!['draft','publish','restore','approve'].includes(input.action)||!Number.isSafeInteger(input.version))return json({error:'Invalid action or version.'},400);
+ if(!['draft','publish','restore'].includes(input.action)||!Number.isSafeInteger(input.version))return json({error:'Invalid action or version.'},400);
  const chapter=await db.prepare('SELECT * FROM mini_chapters WHERE id=?').bind(id).first();
  if(!chapter)return json({error:'Chapter not found.'},404);
  if(input.action==='publish'&&chapter.status!=='published')return json({error:'This editor cannot release unpublished chapters.'},409);
- if(input.action==='approve'){
-  if(chapter.status==='published'||!chapter.draft_revision)return json({error:'Approval applies to a saved unpublished manuscript.'},409);
-  const saved=await db.prepare('SELECT source FROM mini_revisions WHERE id=? AND chapter_id=?').bind(chapter.draft_revision,id).first();
-  if(!saved||saved.source!==input.source)return json({error:'Save this exact manuscript before approving it.'},409);
-  const event=crypto.randomUUID(),date=new Date().toISOString();
-  const results=await db.batch([
-   db.prepare("INSERT INTO mini_release_events(id,action,chapter_ids,created_at) SELECT ?,'approve',?,? WHERE EXISTS(SELECT 1 FROM mini_chapters WHERE id=? AND version=? AND draft_revision=? AND status!='published')").bind(event,JSON.stringify([id]),date,id,input.version,chapter.draft_revision),
-   db.prepare('INSERT INTO mini_release_queue(chapter_id,approved_revision) SELECT ?,? WHERE EXISTS(SELECT 1 FROM mini_release_events WHERE id=?) ON CONFLICT(chapter_id) DO UPDATE SET approved_revision=excluded.approved_revision').bind(id,chapter.draft_revision,event),
-   db.prepare('UPDATE mini_chapters SET version=version+1,modified_at=? WHERE id=? AND EXISTS(SELECT 1 FROM mini_release_events WHERE id=?)').bind(date,id,event)
-  ]);
-  if(!results[0].meta.changes)return json({error:'Another session changed this chapter. Reload before approving.'},409);
-  return json({ok:true,version:input.version+1,modified_at:date});
- }
  let source=input.source,html=rendered;
  if(input.action==='restore'){
   const earlier=await db.prepare('SELECT source,html FROM mini_revisions WHERE chapter_id=? AND id=?').bind(id,String(input.revision||'')).first();
   if(!earlier)return json({error:'Revision not found.'},404);
-  source=earlier.source;html=earlier.html;
+  source=earlier.source;html=renderSource(source);
  }
  const revision=crypto.randomUUID(),date=new Date().toISOString();
  const pointer=input.action==='publish'?'published_revision':'draft_revision';
