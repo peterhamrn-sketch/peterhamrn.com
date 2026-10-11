@@ -47,10 +47,10 @@ explicit removal of their HTML; manifest changes alone do not remove old output.
 
 ## Backend work remaining
 
-Authenticated draft editing, expense editing without source changes, and automatic
-Saturday publication remain unfinished. They should use a dedicated Little Mini
-store, revision-specific approvals, protected previews, and explicit Hold/Resume
-controls. A future cron publisher must not change another installment's date when
+Authenticated chapter correction editing now uses dedicated D1 storage, as
+described below. Expense editing without source changes and automatic Saturday
+publication remain unfinished. Future releases need revision-specific approvals,
+protected previews, and explicit Hold/Resume controls. A future cron publisher must not change another installment's date when
 Publish Now is used. No changes to existing functions or databases were made for
 this launch.
 
@@ -65,3 +65,13 @@ The user explicitly prohibited tests and verification routines for this launch.
 Page generation and Git publication are not live website, browser, or device
 verification. Deployment is triggered by pushing the commit to GitHub `main`;
 report it as triggered, not verified, unless separate permission is given later.
+
+## Database-backed corrections
+
+The Admin Center now supports private drafts, immutable revisions, previews,
+and live corrections for the six published chapters using dedicated D1 storage.
+See `docs/little-mini-admin.md` for sign-in, migration, fallback behavior, and
+publication limits. D1 is authoritative for corrections; the generator above
+remains the original launch fallback. It does not overwrite D1 revisions.
+Future installment scheduling remains Coming Soon, with no date-driven
+promotion or new manuscript publication enabled.
