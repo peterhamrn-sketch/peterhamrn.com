@@ -1,0 +1,19 @@
+{
+  "publicationDate": "2026-10-11",
+  "timezone": "America/New_York",
+  "scheduleDescription": "Future paired installments are planned for Saturdays at 9:00 a.m. Eastern. Automatic scheduling is not active.",
+  "installments": [{"id": "opening", "status": "published", "approved": true, "chapters": ["story-1", "story-2", "story-3", "manual-1", "manual-2", "manual-3"]}],
+  "chapters": [
+    {"id":"story-1","kind":"story","number":1,"slug":"it-all-started-with-a-screw","title":"It All Started With a Screw","source":"story-chapter-01.md","related":["manual-1"]},
+    {"id":"story-2","kind":"story","number":2,"slug":"the-little-computer-on-death-row","title":"The Little Computer on Death Row","source":"story-chapter-02.md","related":["manual-2"]},
+    {"id":"story-3","kind":"story","number":3,"slug":"a-perfectly-reasonable-idea","title":"A Perfectly Reasonable Idea","source":"story-chapter-03.md","related":["manual-1","manual-3"]},
+    {"id":"manual-1","kind":"manual","number":1,"slug":"introduction-and-project-overview","title":"Introduction and Project Overview","source":"manual-chapter-01.md","related":["story-1","story-3"]},
+    {"id":"manual-2","kind":"manual","number":2,"slug":"assessing-and-preparing-an-older-mac","title":"Assessing and Preparing an Older Mac","source":"manual-chapter-02.md","related":["story-2"]},
+    {"id":"manual-3","kind":"manual","number":3,"slug":"creating-a-bootable-macos-installer","title":"Creating a Bootable macOS Installer","source":"manual-chapter-03.md","related":["story-3"]}
+  ],
+  "expenses": [
+    {"item":"Wired keyboard and mouse","cents":2300,"status":"purchased"},
+    {"item":"Replacement keyboard","cents":2900,"status":"planned"},
+    {"item":"Amazon keyboard return","cents":-1300,"status":"pending"}
+  ]
+}
