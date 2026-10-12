@@ -17,5 +17,14 @@ export async function basic(request,env){
 }
 export async function authorized(request,env){return Boolean(await session(request,env))||await basic(request,env);}
 export function returnPath(value){return typeof value==='string'&&/^\/admin(?:\/|$)/.test(value)&&!value.includes('\\')&&!/[\r\n]/.test(value)&&!value.startsWith('/admin/login')?value:'/admin/';}
-export function sessionCookie(token,remembered=false){return `${ADMIN_COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict${remembered?'; Max-Age=2592000':''}`;}
+export function sessionCookie(token,remembered=false,expiresAt=null){
+ const base=`${ADMIN_COOKIE}=${token}; Path=/; HttpOnly; Secure`;
+ if(!remembered)return base+'; SameSite=Strict';
+ // Permit safe top-level return navigation. POST Origin/CSRF validation remains mandatory.
+ // Bind browser persistence to the existing absolute server expiry, never renew 30 days here.
+ const expiry=new Date(expiresAt);
+ if(!expiresAt||!Number.isFinite(expiry.valueOf()))throw Error('Remembered session expiration is required.');
+ const remaining=Math.max(0,Math.floor((expiry.valueOf()-Date.now())/1000));
+ return `${base}; SameSite=Lax; Max-Age=${remaining}; Expires=${expiry.toUTCString()}`;
+}
 export const clearCookie=()=>`${ADMIN_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;

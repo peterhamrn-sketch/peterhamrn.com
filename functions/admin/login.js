@@ -29,6 +29,6 @@ export async function onRequest({request,env}){
    env.RECOVERY_DB.prepare('DELETE FROM admin_login_attempts WHERE created_at<=?').bind(recent),
    env.RECOVERY_DB.prepare('INSERT INTO admin_sessions(token_hash,user_name,credential_hash,remembered,created_at,expires_at) VALUES(?,?,?,?,?,?)').bind(await hash(token),'peter',await hash(env.RECOVERY_ADMIN_PASSWORD),remembered?1:0,stamp,expiry)
   ]);
-  const response=new Response(null,{status:303,headers:{Location:next,'Cache-Control':'no-store'}});response.headers.append('Set-Cookie',sessionCookie(token,remembered));response.headers.append('Set-Cookie',`${challengeName}=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0`);return response;
+  const response=new Response(null,{status:303,headers:{Location:next,'Cache-Control':'no-store'}});response.headers.append('Set-Cookie',sessionCookie(token,remembered,expiry));response.headers.append('Set-Cookie',`${challengeName}=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0`);return response;
  }catch{return page('<h1>Administrator sign-in temporarily unavailable</h1>',503);}
 }

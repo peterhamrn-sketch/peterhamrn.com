@@ -16,7 +16,7 @@ without indefinite sliding extension. Reauthentication replaces the current
 session with a fresh credential. A password change invalidates existing sessions.
 
 Every /admin request is gated by server-side session lookup. The opaque random
-256-bit cookie uses __Host-, Path=/, Secure, HttpOnly and SameSite=Strict; only its
+256-bit cookie uses __Host-, Path=/, Secure and HttpOnly; only its
 SHA-256 hash is stored in D1. Credentials are never saved in browser storage.
 A signed, expiring login challenge plus Origin validation prevents login CSRF;
 password attempts are atomically rate-limited using a keyed IP hash, which is
@@ -42,3 +42,25 @@ account provisioning or recovery configuration was changed.
 No automated tests, browser tests, test messages, live functional exercises, or
 verification scripts were run for this implementation. Deployment/migration
 results do not establish browser or email acceptance behavior.
+
+## Remembered-cookie return navigation correction
+
+D1 incident inspection showed the reported login had remembered=1 and a precise
+720-hour lifetime. The form value and server expiration were working. Source
+inspection found a Strict cookie on all sessions; Strict can suppress cookies
+on navigation from outside the site even when the cookie is still stored.
+Actual iPad cookie storage/request headers were not inspected, so Safari's exact
+restart behavior is not established from source alone.
+
+Remembered cookies now use SameSite=Lax, with both Max-Age and Expires calculated
+from the saved absolute D1 expiration. Same-origin POST checks and session-bound
+form CSRF validation are unchanged. Non-remembered cookies remain SameSite=Strict,
+browser-session-only, with an eight-hour D1 lifetime. Valid remembered GET/HEAD
+requests reissue the same cookie with its remaining lifetime, permitting old
+Strict cookies to upgrade during authenticated navigation without extending
+server expiration. Logout responses are never overwritten. Revocation, password
+validation, rate limiting and the Little Mini account grant are unchanged.
+
+A new remembered sign-in installs the corrected cookie immediately. Existing
+browsers can upgrade while authenticated or sign in once again. No automated,
+browser or functional verification routines were performed.

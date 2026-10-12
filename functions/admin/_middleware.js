@@ -1,4 +1,4 @@
-import {session,returnPath,equal} from '../_admin/auth.js';
+import {session,returnPath,equal,cookie,sessionCookie} from '../_admin/auth.js';
 import {esc} from '../_recovery/subscriptions.js';
 export async function onRequest(context){
  const {request,env}=context,url=new URL(request.url);
@@ -17,7 +17,13 @@ export async function onRequest(context){
    const f=await request.clone().formData();if(!equal(String(f.get('admin_csrf')||''),admin.csrf))return new Response('Request rejected',{status:403});
   }else if(!type.startsWith('application/json'))return new Response('Request rejected',{status:403});
  }
- const response=await context.next();
+ let response=await context.next();
+ if(admin.remembered&&['GET','HEAD'].includes(request.method)&&url.pathname.replace(/\/$/,'')!=='/admin/logout'){
+  // Upgrade an existing remembered cookie after successful authorization; keep its token
+  // and D1 expiry unchanged. Never override logout or revive an expired/revoked session.
+  response=new Response(response.body,{status:response.status,statusText:response.statusText,headers:response.headers});
+  response.headers.append('Set-Cookie',sessionCookie(cookie(request),true,admin.expires_at));
+ }
  if(request.method==='HEAD'||!response.headers.get('Content-Type')?.includes('text/html'))return response;
  return new HTMLRewriter().on('form',{element(e){if((e.getAttribute('method')||'get').toLowerCase()==='post')e.prepend(`<input type="hidden" name="admin_csrf" value="${esc(admin.csrf)}">`,{html:true});}}).on('main',{element(e){e.prepend('<p><a href="/admin/">Admin Center</a> · <a href="/admin/logout">Session &amp; Sign Out</a></p>',{html:true});}}).transform(response);
 }
