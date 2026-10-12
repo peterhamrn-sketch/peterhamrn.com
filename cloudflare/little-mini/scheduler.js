@@ -32,7 +32,7 @@ export class WeeklyRelease extends DurableObject {
  async fetch(request){
   const path=new URL(request.url).pathname;
   if(path==='/notify'&&request.method==='POST'){const input=await request.json();return Response.json(await dispatchAutomaticAnnouncements(this.env,input.event_id,true));}
-  let published=false;
+  let publicationEvent=null;
   if(request.method!=='POST'||!['/initialize','/reconcile','/release'].includes(path))return new Response('Not found',{status:404});
   const response=await this.ctx.blockConcurrencyWhile(async()=>{
    let result={},previousAlarm=null,alarmPrepared=false;
@@ -47,7 +47,7 @@ export class WeeklyRelease extends DurableObject {
      const safeAlarm=previousAlarm===null?candidate:candidate===null?previousAlarm:Math.min(previousAlarm,candidate);
      if(safeAlarm!==null&&safeAlarm!==previousAlarm)await this.ctx.storage.setAlarm(Math.max(safeAlarm,Date.now()+1));
     });
-    published=result.ok&&result.action==='publish-now';
+    publicationEvent=result.ok?result.publication_event:null;
     const alarm=await this.reconcile();
     return Response.json({...result,...alarm,initialized:path==='/initialize'});
    }catch(error){
@@ -59,14 +59,15 @@ export class WeeklyRelease extends DurableObject {
     return Response.json({error:error.message||String(error)},{status:400});
    }
   });
-  if(published)this.ctx.waitUntil(dispatchAutomaticAnnouncements(this.env).catch(error=>this.ctx.storage.put('last_email_error',String(error))));
+  if(publicationEvent)this.ctx.waitUntil(dispatchAutomaticAnnouncements(this.env,publicationEvent).catch(error=>this.ctx.storage.put('last_email_error',String(error))));
   return response;
  }
  async alarm(){
+  let publicationEvent=null;
   await this.ctx.blockConcurrencyWhile(async()=>{
    const now=new Date().toISOString();
    try{
-    await publishDue(this.env.LITTLE_MINI_DB,now);
+    const published=await publishDue(this.env.LITTLE_MINI_DB,now);publicationEvent=published.publication_event;
     const next=await this.reconcile();
     await this.ctx.storage.put('last_result',{at:now,ok:true,...next});
    }catch(error){
@@ -75,7 +76,7 @@ export class WeeklyRelease extends DurableObject {
     throw error;
    }
   });
-  try{await dispatchAutomaticAnnouncements(this.env);}catch(error){await this.ctx.storage.put('last_email_error',String(error));}
+  try{await dispatchAutomaticAnnouncements(this.env,publicationEvent);}catch(error){await this.ctx.storage.put('last_email_error',String(error));}
  }
 }
 export default {

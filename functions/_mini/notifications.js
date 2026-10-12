@@ -1,7 +1,8 @@
-// Drain work created by actual initial publication only. Never call this during deployment.
+// Automatic delivery is scoped to this successful publication batch. Older work requires explicit admin retry.
 export async function dispatchAutomaticAnnouncements(env,eventId=null,retry=false){
+ if(!eventId)return {ok:true,processed:0};
  const rows=(await env.LITTLE_MINI_DB.prepare(`SELECT DISTINCT event_id FROM mini_publication_outbox
-  WHERE status!='complete'${eventId?' AND event_id=?':''} ORDER BY published_at`).bind(...(eventId?[eventId]:[])).all()).results||[];
+  WHERE status!='complete' AND ${retry?'event_id=?':'substr(event_id,-36)=?'} ORDER BY published_at`).bind(eventId).all()).results||[];
  for(const row of rows){
   try{
    if(!env.LITTLE_MINI_SETUP_SECRET)throw Error('Publication notification authentication is not configured.');

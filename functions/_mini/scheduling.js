@@ -18,7 +18,7 @@ export const chapterStatusLabel=c=>c.status==='draft'&&!c.scheduled_at&&c.draft_
 export async function publishDue(db,now=new Date().toISOString()){
  const publicationDate=easternInput(now).slice(0,10),event=crypto.randomUUID();
  // Only the exact approved saved revision may release. Draft saves invalidate this pointer.
- return db.batch([
+ await db.batch([
   db.prepare(`INSERT OR IGNORE INTO mini_publication_outbox(chapter_id,event_id,kind,number,title,path,published_at,updated_at)
    SELECT c.id,'little-mini-chapter-'||c.number||'-'||?,c.kind,c.number,c.title,c.path,?,? FROM mini_chapters c
    JOIN mini_release_queue q ON q.chapter_id=c.id JOIN mini_revisions r ON r.id=q.approved_revision AND r.chapter_id=c.id
@@ -33,6 +33,7 @@ export async function publishDue(db,now=new Date().toISOString()){
    SELECT 1 FROM mini_chapters c WHERE c.id=mini_release_queue.chapter_id AND c.status='published'
    AND c.published_revision=mini_release_queue.approved_revision)`).bind(now)
  ]);
+ return {publication_event:event};
 }
 export async function releaseAction(db,input,prepareAlarm){
  if(!['schedule','publish-now','hold','resume'].includes(input.action))throw Error('Unknown release action.');
@@ -83,7 +84,7 @@ export async function releaseAction(db,input,prepareAlarm){
    WHERE id=? AND status='published' AND EXISTS(SELECT 1 FROM mini_release_events WHERE id=?)`).bind(event,now,now,c.id,event));
  }
  const results=await db.batch(stmts);if(!results[0].meta?.changes)throw Error('The chapter changed in another session. Reload before retrying.');
- return {ok:true,action:input.action,ids,scheduled_at:when};
+ return {ok:true,action:input.action,ids,scheduled_at:when,publication_event:input.action==='publish-now'?event:null};
 }
 
 export function nextWeeklyWindow(now=Date.now()){
