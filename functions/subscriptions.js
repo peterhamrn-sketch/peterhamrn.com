@@ -1,6 +1,15 @@
 import {now,plus,esc,random,hash,mac,page,sameOrigin,sendEmail,cookie,session} from './_recovery/subscriptions.js';
 import {subscriptionLinkEmail} from './_recovery/subscription-link-email.js';
+import {announcementIdentity} from './_recovery/announcement-identities.js';
 const labels=new Map([['little-mini','Little Mini'],['recovery-tags','Recovery Tags Updates'],['asm-instructor','ASM Instructor'],['classes-basic','Basic ASM Classes'],['classes-advanced','Advanced ASM Classes']]);
+function subscriptionSender(purpose,topics){
+ const neutral={from:'PeterHamRN.com <subscriptions@peterhamrn.com>',reply_to:'support@peterhamrn.com'};
+ if(purpose==='manage'||!topics.length)return neutral;
+ const identities=topics.map(topic=>announcementIdentity([topic])),first=identities[0];
+ // A shared topic identity covers Basic/Advanced together. General, mixed-topic
+ // confirmation messages use the neutral subscription-system identity.
+ return identities.every(i=>i.from===first.from&&i.reply_to===first.reply_to)?{from:first.from,reply_to:first.reply_to}:neutral;
+}
 const norm=v=>String(v||'').trim().toLowerCase();
 const valid=v=>v.length<=254&&/^[^\s@<>"?&#]+@[^\s@<>"?&#]+\.[^\s@<>"?&#]+$/.test(v);
 const tokenFormat=v=>/^[a-f0-9]{64}$/.test(v);
@@ -41,7 +50,7 @@ async function sendLink(request,env,form,topics){
  if(!result[0].meta?.changes)return signup(topics,selected,'Please wait before requesting another link. Requests and resends share the same limit.',manage);
  const content=subscriptionLinkEmail(purpose,selected.map(t=>labels.get(t)),'https://peterhamrn.com/subscriptions?token='+token);
  try{
-  const response=await sendEmail(env,id,email,content.subject,content.text,{html:content.html},AbortSignal.timeout(15000));
+  const response=await sendEmail(env,id,email,content.subject,content.text,{html:content.html,...subscriptionSender(purpose,selected)},AbortSignal.timeout(15000));
   if(!response.ok){await env.RECOVERY_DB.prepare('UPDATE subscription_link_challenges SET revoked_at=? WHERE token_hash=?').bind(now(),tokenHash).run();return signup(topics,selected,'Email is temporarily unavailable. Please request another link later.',manage);}
  }catch{
   // Acceptance may be unknown. Keep the link usable if its email arrives; never
