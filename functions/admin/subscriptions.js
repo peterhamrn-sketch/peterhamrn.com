@@ -7,7 +7,7 @@ import {publishedUpdates} from '../_recovery/published-updates.js';
 async function view(env,message='',editID=''){
  const [people,topics,updates]=await Promise.all([
  env.RECOVERY_DB.prepare('SELECT s.email,s.created_at,t.topic_id,t.active FROM subscribers s LEFT JOIN subscriber_topics t ON t.email=s.email ORDER BY s.email,t.topic_id').all(),
- env.RECOVERY_DB.prepare('SELECT t.id,t.label,t.enabled,COUNT(CASE WHEN s.active=1 AND s.confirmed_at IS NOT NULL AND julianday(s.confirmed_at) IS NOT NULL AND julianday(s.confirmed_at)<=julianday('now') THEN 1 END) active FROM subscription_topics t LEFT JOIN subscriber_topics s ON s.topic_id=t.id GROUP BY t.id ORDER BY t.label').all(),
+ env.RECOVERY_DB.prepare('SELECT t.id,t.label,t.enabled,COUNT(CASE WHEN s.active=1 AND s.confirmed_at IS NOT NULL AND julianday(s.confirmed_at) IS NOT NULL AND julianday(s.confirmed_at)<=julianday(CURRENT_TIMESTAMP) THEN 1 END) active FROM subscription_topics t LEFT JOIN subscriber_topics s ON s.topic_id=t.id GROUP BY t.id ORDER BY t.label').all(),
  env.RECOVERY_DB.prepare('SELECT u.id,u.title,d.status,COUNT(d.email) n FROM subscription_updates u LEFT JOIN subscription_deliveries d ON d.update_id=u.id GROUP BY u.id,d.status').all()]);
  const topicNames=new Map(topics.results.map(t=>[t.id,t.label]));
  const count=(id,status)=>Number(updates.results.find(u=>u.id===id&&u.status===status)?.n||0);
@@ -50,7 +50,7 @@ export async function onRequest({request,env}){
  // Atomic batch: the audience is inserted only in the transaction that first creates the update.
  await env.RECOVERY_DB.batch([
  env.RECOVERY_DB.prepare('INSERT OR IGNORE INTO subscription_updates(id,topic_id,title,url,published_at,created_at) VALUES(?,?,?,?,?,?)').bind(id,publication.topic,publication.title,publication.url,publication.publishedAt,now()),
- env.RECOVERY_DB.prepare("INSERT INTO subscription_deliveries(update_id,email,status,created_at) SELECT ?,email,'pending',? FROM subscriber_topics WHERE topic_id=? AND active=1 AND confirmed_at IS NOT NULL AND julianday(confirmed_at) IS NOT NULL AND julianday(confirmed_at)<=julianday('now') AND EXISTS(SELECT 1 FROM subscription_topics WHERE id=topic_id AND enabled=1) AND EXISTS(SELECT 1 FROM subscription_updates WHERE id=? AND audience_frozen=0)").bind(id,now(),publication.topic,id),
+ env.RECOVERY_DB.prepare("INSERT INTO subscription_deliveries(update_id,email,status,created_at) SELECT ?,email,'pending',? FROM subscriber_topics WHERE topic_id=? AND active=1 AND confirmed_at IS NOT NULL AND julianday(confirmed_at) IS NOT NULL AND julianday(confirmed_at)<=julianday(CURRENT_TIMESTAMP) AND EXISTS(SELECT 1 FROM subscription_topics WHERE id=topic_id AND enabled=1) AND EXISTS(SELECT 1 FROM subscription_updates WHERE id=? AND audience_frozen=0)").bind(id,now(),publication.topic,id),
  env.RECOVERY_DB.prepare('UPDATE subscription_updates SET audience_frozen=1 WHERE id=?').bind(id)
  ]);return view(env,'Recipient list prepared. Click Send announcement to send the email.');
  }
@@ -62,7 +62,7 @@ export async function onRequest({request,env}){
  for(const recipient of recipients.results){
  const email=recipient.email;
  const claim=await env.RECOVERY_DB.prepare("UPDATE subscription_deliveries SET status='sending' WHERE update_id=? AND email=? AND status='pending' RETURNING email").bind(id,email).first();if(!claim)continue;
- const active=await env.RECOVERY_DB.prepare('SELECT 1 active FROM subscriber_topics WHERE email=? AND topic_id=? AND active=1 AND confirmed_at IS NOT NULL AND julianday(confirmed_at) IS NOT NULL AND julianday(confirmed_at)<=julianday('now') AND EXISTS(SELECT 1 FROM subscription_topics WHERE id=topic_id AND enabled=1)').bind(email,update.topic_id).first();if(!active){skipped++;await env.RECOVERY_DB.prepare("UPDATE subscription_deliveries SET status='skipped' WHERE update_id=? AND email=?").bind(id,email).run();continue}
+ const active=await env.RECOVERY_DB.prepare('SELECT 1 active FROM subscriber_topics WHERE email=? AND topic_id=? AND active=1 AND confirmed_at IS NOT NULL AND julianday(confirmed_at) IS NOT NULL AND julianday(confirmed_at)<=julianday(CURRENT_TIMESTAMP) AND EXISTS(SELECT 1 FROM subscription_topics WHERE id=topic_id AND enabled=1)').bind(email,update.topic_id).first();if(!active){skipped++;await env.RECOVERY_DB.prepare("UPDATE subscription_deliveries SET status='skipped' WHERE update_id=? AND email=?").bind(id,email).run();continue}
  const token=random();await env.RECOVERY_DB.prepare('INSERT INTO subscription_unsubscribe(token_hash,email,topic_id,created_at) VALUES(?,?,?,?)').bind(await hash(token),email,update.topic_id,now()).run();
  const link=`https://peterhamrn.com/subscriptions-unsubscribe?token=${token}`;
  const content=publishedUpdates.find(p=>p.id===id),summary=content?.summary||'A new project update is ready to read.',button=content?.buttonLabel||'Read the update';
