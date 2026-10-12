@@ -5,6 +5,25 @@ import {publisherRequest} from '../_mini/publisher.js';
 import {easternLabel} from '../_mini/scheduling.js';
 import {now,random,hash,esc,page,sameOrigin,adminAuth,sendEmail} from '../_recovery/subscriptions.js';
 import {publishedUpdates} from '../_recovery/published-updates.js';
+const noticeCookie='__Secure-subscription_notice';
+function noticeHeader(message){return `${noticeCookie}=${encodeURIComponent(String(message).slice(0,1000))}; Path=/admin/subscriptions; Max-Age=120; Secure; HttpOnly; SameSite=Strict`;}
+function workspaceRedirect(request,message,options={}){
+ const destination=new URL('/admin/subscriptions',request.url);
+ if(options.edit)destination.searchParams.set('edit',options.edit);else destination.searchParams.set('work',options.work||'drafts');
+ // Both successful actions and rejected stale actions finish with a fresh GET.
+ // Feedback is consumed once, never kept in the URL or announcement metadata.
+ return new Response(null,{status:303,headers:{Location:destination.pathname+destination.search,'Cache-Control':'no-store','Set-Cookie':noticeHeader(message)}});
+}
+function consumeNotice(request){
+ const value=(request.headers.get('Cookie')||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(noticeCookie+'='))?.slice(noticeCookie.length+1);
+ try{return value?decodeURIComponent(value).slice(0,1000):'';}catch{return '';}
+}
+async function withConsumedNotice(response){
+ const result=await response;
+ const updated=new Response(result.body,{status:result.status,statusText:result.statusText,headers:result.headers});
+ updated.headers.append('Set-Cookie',`${noticeCookie}=; Path=/admin/subscriptions; Max-Age=0; Secure; HttpOnly; SameSite=Strict`);
+ return updated;
+}
 async function view(env,message='',options={}){
  const [people,topics,updates]=await Promise.all([
  env.RECOVERY_DB.prepare('SELECT s.email,s.created_at,t.topic_id,t.active FROM subscribers s LEFT JOIN subscriber_topics t ON t.email=s.email ORDER BY s.email,t.topic_id').all(),
@@ -38,7 +57,18 @@ export async function onRequest({request,env}){
  if(!await adminAuth(request,env)){const r=page('<h1>Authorization required</h1>',401);r.headers.set('WWW-Authenticate','Basic realm="Subscriptions Admin", charset="UTF-8"');return r}
  try{
  if(!['GET','POST'].includes(request.method))return page('<h1>Method not allowed</h1>',405);
- if(request.method==='GET'){const url=new URL(request.url);if(url.searchParams.has('publication-preview')){const id=url.searchParams.get('publication-preview'),saved=await env.RECOVERY_DB.prepare('SELECT details_json FROM subscription_automatic_updates WHERE update_id=?').bind(id).first(),p=saved?JSON.parse(saved.details_json):publishedUpdates.find(p=>p.id===id);return p?publicationPreview(env,p):page('<h1>Published announcement not found</h1>',404);}if(url.searchParams.has('preview'))return announcementPreview(env,url.searchParams.get('preview'));return view(env,url.searchParams.get('message')||'',{edit:url.searchParams.get('edit')||'',new:url.searchParams.has('new'),work:url.searchParams.get('work')||'drafts'});}
+ if(request.method==='GET'){
+  const url=new URL(request.url);
+  // Normalize bookmarks/return URLs made by the previous workspace version.
+  if(url.searchParams.has('message')){
+   const message=url.searchParams.get('message')||'';url.searchParams.delete('message');
+   return new Response(null,{status:303,headers:{Location:url.pathname+url.search,'Cache-Control':'no-store','Set-Cookie':noticeHeader(message)}});
+  }
+  if(url.searchParams.has('publication-preview')){const id=url.searchParams.get('publication-preview'),saved=await env.RECOVERY_DB.prepare('SELECT details_json FROM subscription_automatic_updates WHERE update_id=?').bind(id).first(),p=saved?JSON.parse(saved.details_json):publishedUpdates.find(p=>p.id===id);return p?publicationPreview(env,p):page('<h1>Published announcement not found</h1>',404);}
+  if(url.searchParams.has('preview'))return announcementPreview(env,url.searchParams.get('preview'));
+  return withConsumedNotice(view(env,consumeNotice(request),{edit:url.searchParams.get('edit')||'',new:url.searchParams.has('new'),work:url.searchParams.get('work')||'drafts'}));
+ }
+
  if(!sameOrigin(request))return page('<h1>Request rejected</h1>',403);
  const f=await request.formData(),action=f.get('action'),id=String(f.get('id')||'');
  if(String(action).startsWith('announcement-')){
@@ -46,8 +76,15 @@ export async function onRequest({request,env}){
    if(action==='announcement-preview-draft')return await view(env,'Preview only. Unsaved wording is retained below; no email was sent.',{buffer:draftBuffer(f),preview:f});
    if(action==='announcement-send-confirm')return await announcementSendConfirmation(env,id,Number(f.get('version')));
    const result=await announcementAction(env,f);
-   const destination=new URL('/admin/subscriptions',request.url);destination.searchParams.set('message',result.message||String(result));if(result.id&&action==='announcement-copy')destination.searchParams.set('edit',result.id);else destination.searchParams.set('work',result.work||'drafts');return new Response(null,{status:303,headers:{Location:destination.pathname+destination.search,'Cache-Control':'no-store'}});
-  }catch(error){return view(env,error.message||'Announcement operation was not completed.',['announcement-save','announcement-preview-draft'].includes(action)?{buffer:draftBuffer(f)}:{work:'prepared'});}
+   return workspaceRedirect(request,result.message||String(result),result.id&&action==='announcement-copy'?{edit:result.id}:{work:result.work||'drafts'});
+  }catch(error){
+   const message=error.message||'Announcement operation was not completed.';
+   // Preserve unsaved editor input on validation errors; lifecycle errors need
+   // no editor buffer and must not leave a repeatable stale POST in Safari.
+   if(['announcement-save','announcement-preview-draft'].includes(action))return view(env,message,{buffer:draftBuffer(f)});
+   return workspaceRedirect(request,message,{work:'prepared'});
+  }
+
  }
  if(action==='topic'){const label=String(f.get('label')||'').trim();if(!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(id)||id.length>64||!label||label.length>100)return page('<h1>Invalid topic</h1>',400);await env.RECOVERY_DB.prepare('INSERT OR IGNORE INTO subscription_topics(id,label) VALUES(?,?)').bind(id,label).run();return view(env,'Topic added. No subscribers were enrolled.');}
  if(action==='retry-automatic-confirm'||action==='send-confirm'){
