@@ -57,3 +57,36 @@ links and preference management. Recipient opt-out links are described rather
 than fabricated; an existing stored payload is displayed with its token redacted.
 The workspace uses server-rendered tabs and collapsed secondary sections; local
 JavaScript only expands the message editor and simplifies optional fields.
+
+## Public subscription email links
+
+Apply `subscription-links.sql` to the existing production `RECOVERY_DB` before
+this release. It adds an email-link challenge table, its rate-limit index, and a
+selected-topic snapshot table. It does not change subscriber preferences,
+confirmed records, existing subscriber sessions, code challenges, or deliveries.
+
+`/subscriptions` now offers all five existing subscription topics and a separate
+management-link request. Existing `?topic=...` links preselect the corresponding
+topic; `classes-both` preselects Basic and Advanced. Management requests never
+enroll users. Confirmation links expire in 24 hours; management access links in
+30 minutes. Both use 256-bit random tokens with only SHA-256 hashes stored in D1.
+Email addresses and account IDs are never included in the link URL.
+
+A token-bearing GET is read-only and shows a Confirm button. Only a same-origin
+POST can redeem the token. Consumption, account creation where needed, selected
+opt-ins, and a hashed one-hour preference session are committed atomically in
+one guarded D1 batch. Concurrent or repeated redemptions cannot create another
+session or apply preferences. Existing confirmed timestamps are preserved. A
+management session can modify only the email address in its server-side session,
+never a submitted email address. Cookies remain Secure, HttpOnly, SameSite=Strict,
+and scoped to `/subscriptions`; sign-out revokes the current stored session.
+
+Requests and resends share an atomic per-email/per-IP limit of five per hour
+and a one-minute cooldown. Delivery errors remain in that request ledger to
+prevent bypassing the limits. Responses do not disclose subscriber membership;
+invalid, expired and already-used links offer a fresh-link request with email
+entry. Email-link templates retain the existing transactional Resend sender and
+include HTML plus plain text. The announcement senders, unsubscribe endpoints,
+admin login, Recovery Tags owner verification and ASM authentication are untouched.
+Previously issued public subscription codes are not accepted; their users are
+invited to request a fresh link. No existing code records are deleted.
