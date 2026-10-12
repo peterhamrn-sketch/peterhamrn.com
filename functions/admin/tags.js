@@ -1,3 +1,4 @@
+import {authorized as authorized} from '../_admin/auth.js';
 const HEADERS = {
   'Content-Type': 'text/html; charset=utf-8',
   'Cache-Control': 'no-store',
@@ -18,17 +19,7 @@ async function sha256(value) {
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
-async function authorized(request, env) {
-  if (!env.RECOVERY_ADMIN_PASSWORD) return false;
-  const header = request.headers.get('Authorization') || '';
-  if (!header.startsWith('Basic ')) return false;
-  try {
-    const decoded = atob(header.slice(6));
-    const split = decoded.indexOf(':');
-    if (split < 0 || decoded.slice(0, split) !== ADMIN_USER) return false;
-    return (await sha256(decoded.slice(split + 1))) === (await sha256(env.RECOVERY_ADMIN_PASSWORD));
-  } catch { return false; }
-}function response(body, status = 200, method = 'GET', extra = {}) {
+function response(body, status = 200, method = 'GET', extra = {}) {
   return new Response(method === 'HEAD' ? null : body, { status, headers: { ...HEADERS, ...extra } });
 }
 function login(method) {

@@ -1,3 +1,4 @@
+import {authorized as sharedAuthorized} from '../_admin/auth.js';
 export const now=()=>new Date().toISOString();
 export const plus=m=>new Date(Date.now()+m*60000).toISOString();
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -9,4 +10,4 @@ export function sameOrigin(r){return r.headers.get('Origin')===new URL(r.url).or
 export async function sendEmail(env,id,email,subject,text,extra={},signal){return fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':id},signal,body:JSON.stringify({from:'PeterHamRN.com <recovery@peterhamrn.com>',reply_to:'recovery@peterhamrn.com',to:[email],subject,text,...extra})})}
 export function cookie(r){return (r.headers.get('Cookie')||'').split(';').map(s=>s.trim()).find(s=>s.startsWith('subscription_session='))?.slice(21)||''}
 export async function session(r,env){const raw=cookie(r);return raw?env.RECOVERY_DB.prepare('SELECT email FROM subscription_sessions WHERE session_hash=? AND expires_at>?').bind(await hash(raw),now()).first():null}
-export async function adminAuth(r,env){const h=r.headers.get('Authorization')||'';if(!env.RECOVERY_ADMIN_PASSWORD||!h.startsWith('Basic '))return false;try{const s=atob(h.slice(6)),i=s.indexOf(':');return s.slice(0,i)==='peter'&&await hash(s.slice(i+1))===await hash(env.RECOVERY_ADMIN_PASSWORD)}catch{return false}}
+export async function adminAuth(r,env){return sharedAuthorized(r,env)}

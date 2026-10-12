@@ -70,3 +70,44 @@ Optional `summary` and `buttonLabel` publication fields customize the introducti
 and link label without changing update IDs or delivery history. Subscriber email
 cells use Cloudflare email-off markers so authenticated administrators see the
 actual address without relying on a browser decoding script.
+
+## ASM Instructor and public Classes expansion
+
+The existing ASM Instructor topic has a signup button on `/asm-instructor.html`.
+Classes offers `classes-basic`, `classes-advanced`, and an explicit combined
+signup selection `classes-both`. The combined selection confirms both real
+preferences in one existing confirmation transaction; it is not a third topic.
+Class registration and application authentication never enroll subscribers.
+
+Apply `functions/_recovery/subscription-expansion.sql` to RECOVERY_DB. It adds
+only the two topics, announcement drafts/topic mappings, and multi-topic
+unsubscribe scopes. Existing subscriber/delivery/publication records are left
+unchanged. The same Resend sender and credentials remain in use.
+
+In `/admin/subscriptions`, use the database-backed composer to select ASM
+Instructor or Basic/Advanced Classes. Enter a standalone message, or a published
+update title, summary, date, and public-content URL. Multiple labeled links can
+cover multiple classes. Saving creates a stable draft ID; editing a draft keeps
+that ID. Preview uses the same email formatter as delivery, with a placeholder
+for the recipient-specific unsubscribe token.
+
+Preparation requires enabled topics and active, confirmed subscriptions with
+valid confirmation timestamps. Combined audiences are deduplicated by normalized
+email. The published mode requires a public same-site HTML URL returning HTTP
+200 directly at preparation time, plus the administrator's actual publication
+date. This proves public availability, not the truth of the entered summary;
+the administrator remains responsible for matching the published content.
+
+Prepared content and recipients are immutable. Review the recipient list and
+preview, select Approve Sending, then Send Approved Announcement. Send works in
+finite batches of up to ten. Eligibility is rechecked immediately before Resend.
+Delivery uses the existing subscription_updates/subscription_deliveries tables
+and persistent payload/idempotency metadata. Accepted recipients never resend;
+rejected, uncertain or interrupted sends remain held for operator review in
+Resend. Counts and sanitized errors appear in the manager. Existing manual
+catalog announcements now also require valid confirmed_at at preparation/send.
+Neither deployments nor class saves/publication send these announcements.
+
+Combined email unsubscribe links disable only the opted-in topics represented
+by that message. Existing single-topic unsubscribe tokens retain their behavior.
+All preference-management and authentication messages remain independent.

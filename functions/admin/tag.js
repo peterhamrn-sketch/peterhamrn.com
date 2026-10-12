@@ -1,8 +1,8 @@
+import {authorized as auth} from '../_admin/auth.js';
 const H={'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow, noarchive','Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const iso=()=>new Date().toISOString();
 async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));return [...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,'0')).join('')}
-async function auth(r,e){if(!e.RECOVERY_ADMIN_PASSWORD)return false;const h=r.headers.get('Authorization')||'';if(!h.startsWith('Basic '))return false;try{const d=atob(h.slice(6)),i=d.indexOf(':');return i>0&&d.slice(0,i)==='peter'&&(await hash(d.slice(i+1)))===(await hash(e.RECOVERY_ADMIN_PASSWORD))}catch{return false}}
 function res(b,s=200,x={}){return new Response(b,{status:s,headers:{...H,...x}})}
 function fmt(v){if(!v)return '—';const d=new Date(v);return Number.isNaN(d.valueOf())?String(v):d.toLocaleString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZone:'America/New_York'})}
 async function eventsTable(env){await env.RECOVERY_DB.prepare("CREATE TABLE IF NOT EXISTS recovery_tag_events (id TEXT PRIMARY KEY NOT NULL, tag_id TEXT NOT NULL, event_type TEXT NOT NULL, detail TEXT, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')))").run()}
