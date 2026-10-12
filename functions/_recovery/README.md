@@ -19,3 +19,41 @@ There is no public write API, account system, or admin interface. Preview
 deployments are not bound to production owner data and fail closed.
 
 Focused validation: `node --test tests/recovery.test.mjs`.
+
+## Subscription announcement workspace
+
+Apply `subscription-workspace.sql` to the existing production `RECOVERY_DB`
+before deploying the workspace. It only creates two empty metadata tables:
+selected sender identities for manual drafts, and separate sending approvals
+for the older published-update catalog. Existing recipient snapshots, subscriber
+preferences, accepted sends, and stored delivery payloads remain unchanged.
+
+`/admin/subscriptions` defaults to My Drafts. New/Edit has dedicated subject,
+message, audience, type, links, and publication-date fields. Saving or previewing
+never sends; Prepare locks wording and the deduplicated recipient audience;
+Approve records authorization; Send opens a separate confirmation page. Prepared
+announcements can be copied to a new unsent draft, never silently unlocked.
+Failed/uncertain deliveries remain held; accepted recipients cannot be resent.
+Automatic publication events retain their original IDs and recovery safeguards.
+
+`announcement-identities.js` configures subscription senders and Reply-To:
+
+| Topic | From address | Reply-To |
+| --- | --- | --- |
+| ASM Instructor | asm@peterhamrn.com | peter@peterhamrn.com |
+| Basic / Advanced ASM Classes | classes@peterhamrn.com | classes@peterhamrn.com |
+| Recovery Tags | recovery@peterhamrn.com | support@peterhamrn.com |
+| Little Mini | littlemini@peterhamrn.com | support@peterhamrn.com |
+
+The sender uses the existing PeterHamRN.com display name. Combined Basic/Advanced
+uses the Classes identity. Unrelated audiences require an explicitly selected
+identity from the targeted topics. ASM software and Classes audiences remain
+separate. New delivery payloads persist the chosen sender with their existing
+idempotency key; recovery of older payloads preserves their original sender and
+content. Authentication and subscription-confirmation senders are not changed.
+
+Previews include topic, From, Reply-To, subject, HTML/text bodies, destination
+links and preference management. Recipient opt-out links are described rather
+than fabricated; an existing stored payload is displayed with its token redacted.
+The workspace uses server-rendered tabs and collapsed secondary sections; local
+JavaScript only expands the message editor and simplifies optional fields.
