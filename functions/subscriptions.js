@@ -59,9 +59,15 @@ async function sendLink(request,env,form,topics){
  }
  return checkEmail(purpose);
 }
-function confirmationLanding(){
- const response=page('<h1>Confirming Your Subscription</h1><p id="confirmation-progress" role="status">Please wait while your email link is confirmed.</p><noscript><p>Please enable JavaScript and reopen your email link. No code or second confirmation is needed.</p></noscript>');
- return response.text().then(html=>new Response(html.replace('</main>','</main><script src="/assets/subscription-confirm.js" defer></script>'),{headers:{...Object.fromEntries(response.headers),'Referrer-Policy':'origin','Content-Security-Policy':"default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"}}));
+async function confirmationLanding(){
+ const response=page('<h1>Confirming Your Subscription</h1><p id="confirmation-progress" role="status">Please wait while your email link is confirmed.</p><p>If confirmation does not finish, reopen the original email link. Refreshing this page cannot recover a token already removed from the address bar. You can also <a href="/subscriptions">request a fresh confirmation link</a>.</p><noscript><p>Please enable JavaScript and reopen your email link. No code or second confirmation is needed.</p></noscript>');
+ // Headers are case-insensitive. Replace the shared restrictive policy rather
+ // than combining lowercase and uppercase keys into two enforced CSP policies.
+ const headers=new Headers(response.headers);
+ headers.set('Referrer-Policy','origin');
+ headers.set('Content-Security-Policy',"default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'");
+ const html=await response.text();
+ return new Response(html.replace('</main>','</main><script src="/assets/subscription-confirm.js?v=2" defer></script>'),{headers});
 }
 async function subscriptionOutcome(env,c,already=false){
  const rows=(await env.RECOVERY_DB.prepare('SELECT l.topic_id,s.active,s.confirmed_at FROM subscription_link_topics l LEFT JOIN subscriber_topics s ON s.email=? AND s.topic_id=l.topic_id WHERE l.token_hash=? ORDER BY l.topic_id').bind(c.email,c.token_hash).all()).results;
