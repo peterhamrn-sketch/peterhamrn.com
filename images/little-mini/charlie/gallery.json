@@ -1,0 +1,14 @@
+{
+  "title": "Charlie the Watchdog — Chief of Security",
+  "status": "assets-pending",
+  "placement": "Little Mini special edition, immediately after Enter Charlie heading",
+  "images": [
+    {"file": "chief-addressing-staff.jpg", "caption": "Chief of Security Addressing the Staff", "source": "uploaded photo 1"},
+    {"file": "charlie-close-up.jpg", "caption": "Charlie's Close-Up", "source": "uploaded photo 2"},
+    {"file": "sleeping-on-the-job.jpg", "caption": "Sleeping on the Job", "source": "uploaded photo 3"},
+    {"file": "red-sox-security-detail.jpg", "caption": "The Red Sox Security Detail", "source": "uploaded photo 4"},
+    {"file": "adoption-portrait-2019.jpg", "caption": "Charlie's Original Adoption Portrait — December 2019", "source": "Paw-Affection Dachshund Rescue adoption listing"},
+    {"file": "charlie-watchdog-banner.jpg", "caption": "Charlie the Watchdog — Chief of Security", "source": "Garage Mini illustrated banner"}
+  ],
+  "note": "Gallery assets are not all copied yet; do not publish a broken gallery."
+}
