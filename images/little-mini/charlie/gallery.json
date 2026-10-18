@@ -1,25 +1,25 @@
 {
   "title": "Charlie the Watchdog \u2014 Chief of Security",
-  "status": "four-uploaded-photos-pending-transfer",
+  "status": "ready",
   "placement": "Little Mini special edition, immediately after Enter Charlie heading",
   "images": [
     {
-      "file": "chief-addressing-staff.jpg",
+      "file": "RenderedImage.jpeg",
       "caption": "Chief of Security Addressing the Staff",
       "source": "uploaded photo 1"
     },
     {
-      "file": "charlie-close-up.jpg",
+      "file": "IMG_1096.jpeg",
       "caption": "Charlie's Close-Up",
       "source": "uploaded photo 2"
     },
     {
-      "file": "sleeping-on-the-job.jpg",
+      "file": "IMG_0859.jpeg",
       "caption": "Sleeping on the Job",
       "source": "uploaded photo 3"
     },
     {
-      "file": "red-sox-security-detail.jpg",
+      "file": "IMG_1363.jpeg",
       "caption": "The Red Sox Security Detail",
       "source": "uploaded photo 4"
     },
@@ -34,5 +34,5 @@
       "source": "Garage Mini illustrated banner"
     }
   ],
-  "note": "Adoption portrait and illustrated banner are in this directory. Four uploaded photos are still pending transfer. Do not publish a broken gallery."
+  "note": "All six gallery images are present. IMG_2740.jpeg is an unused alternate and not part of the six-image gallery."
 }
