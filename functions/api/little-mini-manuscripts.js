@@ -23,9 +23,10 @@ export async function onRequest({request,env}){
    LEFT JOIN mini_release_queue q ON q.chapter_id=c.id
    LEFT JOIN mini_revisions r ON r.id=CASE
      WHEN c.status='published' THEN c.published_revision
-     WHEN q.approved_revision IS NOT NULL AND c.status='scheduled' THEN q.approved_revision
+     WHEN c.status='scheduled' THEN q.approved_revision
+     WHEN c.status='draft' THEN c.draft_revision
      ELSE NULL END
-   WHERE c.status='published' OR (c.status='scheduled' AND q.approved_revision IS NOT NULL)
+   WHERE c.status IN ('published','scheduled','draft')
    ORDER BY c.kind,c.number
   `).all();
   if(result.results.some(row=>!row.source))return respond({error:'Incomplete manuscript revisions'},503);
