@@ -57,7 +57,9 @@ el('preview-button').onclick=async()=>{if(busy)return;busy=true;controls();const
  try{const result=await api('preview');if(text.value!==snapshot){say('Text changed while preparing the preview. Preview again.');return;}
  const frame=el('preview').querySelector('iframe');
  frame.style.height='75vh';
- frame.srcdoc=result.html;
+ // Enforce responsive images inside the sandboxed document, even when its external stylesheet is unavailable.
+ const previewCSS='<style>html,body{max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing:border-box}img{max-width:100%!important;height:auto!important}.charlie-preview{max-width:900px!important;width:100%!important;margin:0 auto!important;padding:16px!important}.charlie-reader{max-width:100%!important;min-width:0!important;padding:clamp(12px,3vw,30px)!important}.charlie-hero img{display:block!important;width:100%!important;max-height:300px!important;object-fit:contain!important}.charlie-gallery{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(105px,125px))!important;gap:12px!important;justify-content:start!important}.charlie-thumb{min-width:0!important}.charlie-thumb img{display:block!important;width:100%!important;max-width:125px!important;height:125px!important;object-fit:cover!important}.manuscript{max-width:100%!important;overflow-wrap:break-word!important}@media(max-width:600px){.charlie-gallery{grid-template-columns:repeat(auto-fit,minmax(90px,110px))!important}.charlie-thumb img{height:110px!important}}</style>';
+ frame.srcdoc=result.html.replace('</head>',previewCSS+'</head>');
  el('preview').hidden=false;previewed=snapshot;say('Preview ready. Review it before publishing.');el('preview').scrollIntoView({behavior:'smooth'});
  }catch(error){say(error.message);}finally{busy=false;controls();}};
 async function save(action,extra={}){
