@@ -55,7 +55,9 @@ async function load(id){
 for(const button of document.querySelectorAll('[data-chapter]'))button.addEventListener('click',()=>load(button.dataset.chapter));
 el('preview-button').onclick=async()=>{if(busy)return;busy=true;controls();const snapshot=text.value;
  try{const result=await api('preview');if(text.value!==snapshot){say('Text changed while preparing the preview. Preview again.');return;}
- el('preview').querySelector('iframe').srcdoc=result.html;
+ const frame=el('preview').querySelector('iframe');
+ frame.style.height='75vh';
+ frame.srcdoc=result.html;
  el('preview').hidden=false;previewed=snapshot;say('Preview ready. Review it before publishing.');el('preview').scrollIntoView({behavior:'smooth'});
  }catch(error){say(error.message);}finally{busy=false;controls();}};
 async function save(action,extra={}){
@@ -124,6 +126,9 @@ el('create-chapter').onclick=async()=>{
 // These controls use the dedicated release API and preserve the existing editor workflow.
 
 const styles=String.raw`
+#preview iframe{display:block;width:100%;height:75vh;min-height:550px;overflow:auto;overscroll-behavior:contain}
+#preview{overflow:hidden}
+
 #add-manuscript{margin:20px 0;border:1px solid #294b70;border-radius:12px;padding:14px 18px;background:#102b4b}
 #add-manuscript>summary{cursor:pointer;font-weight:650;font-size:17px}
 #add-manuscript .new-manuscript-fields{padding-top:12px}
