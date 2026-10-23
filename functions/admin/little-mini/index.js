@@ -53,7 +53,16 @@ async function load(id){
  }catch(error){selected=previous;alert(error.message);}finally{busy=false;controls();}
 }
 for(const button of document.querySelectorAll('[data-chapter]'))button.addEventListener('click',()=>load(button.dataset.chapter));
-el('preview-button').onclick=async()=>{if(busy)return;busy=true;controls();const snapshot=text.value;
+el('preview-button').onclick=async()=>{
+ if(busy)return;
+ if(selected==='story-charlie-chief-of-security'){
+  if(text.value!==saved){say('Save your manuscript changes before opening the full-page Charlie preview.');return;}
+  window.open('/admin/little-mini/api?id='+encodeURIComponent(selected)+'&full_preview=1','_blank','noopener');
+  previewed=text.value;
+  say('Full-page preview opened in a new tab.');
+  return;
+ }
+ busy=true;controls();const snapshot=text.value;
  try{const result=await api('preview');if(text.value!==snapshot){say('Text changed while preparing the preview. Preview again.');return;}
  const frame=el('preview').querySelector('iframe');
  frame.style.height='75vh';

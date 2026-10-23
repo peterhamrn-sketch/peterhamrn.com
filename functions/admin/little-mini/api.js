@@ -9,6 +9,15 @@ export async function onRequest({request,env}){
  if(request.method==='GET'){
   const chapter=await db.prepare('SELECT * FROM mini_chapters WHERE id=?').bind(id).first();
   if(!chapter)return json({error:'Chapter not found.'},404);
+  if(url.searchParams.get('full_preview')==='1'){
+   const revisionId=chapter.draft_revision||chapter.published_revision;
+   const saved=revisionId?await db.prepare('SELECT source FROM mini_revisions WHERE id=? AND chapter_id=?').bind(revisionId,id).first():null;
+   if(!saved?.source)return new Response('No saved manuscript to preview.',{status:404});
+   const template=chapter.page_html||'';
+   if(!template.includes('<div class="manuscript"></div>'))return new Response('Page template unavailable.',{status:409});
+   const html=template.replace('<div class="manuscript"></div>','<div class="manuscript">'+renderSource(saved.source)+'</div>');
+   return new Response(html,{headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow, noarchive','Content-Security-Policy':"default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}});
+  }
   const revision=url.searchParams.get('revision');
   const current=await db.prepare('SELECT id,source,created_at,action FROM mini_revisions WHERE chapter_id=? AND id=?').bind(id,revision||chapter.draft_revision||chapter.published_revision).first();
   const history=await db.prepare('SELECT id,created_at,action FROM mini_revisions WHERE chapter_id=? ORDER BY created_at DESC,id DESC').bind(id).all();
