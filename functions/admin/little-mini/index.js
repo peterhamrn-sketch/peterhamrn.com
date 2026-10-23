@@ -55,7 +55,7 @@ async function load(id){
 for(const button of document.querySelectorAll('[data-chapter]'))button.addEventListener('click',()=>load(button.dataset.chapter));
 el('preview-button').onclick=async()=>{if(busy)return;busy=true;controls();const snapshot=text.value;
  try{const result=await api('preview');if(text.value!==snapshot){say('Text changed while preparing the preview. Preview again.');return;}
- el('preview').querySelector('iframe').srcdoc='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src '+"'none'"+'; style-src '+"'self'"+'; base-uri '+"'none'"+'"><link rel="stylesheet" href="/assets/little-mini.css"></head><body><main class="wrap"><article class="reader"><div class="manuscript">'+result.html+'</div></article></main></body></html>';
+ el('preview').querySelector('iframe').srcdoc=result.html;
  el('preview').hidden=false;previewed=snapshot;say('Preview ready. Review it before publishing.');el('preview').scrollIntoView({behavior:'smooth'});
  }catch(error){say(error.message);}finally{busy=false;controls();}};
 async function save(action,extra={}){

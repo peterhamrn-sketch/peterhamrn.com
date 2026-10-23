@@ -30,7 +30,16 @@ export async function onRequest({request,env}){
    db.prepare("INSERT INTO mini_revisions(id,chapter_id,source,html,action,created_at) VALUES(?,?,?,?,'draft',?)").bind(revision,c.id,input.source,rendered,date)
   ]);return json({ok:true,id:chapterId});
  }
- if(input.action==='preview')return json({html:rendered});
+ if(input.action==='preview'){
+  const chapter=await db.prepare('SELECT page_html FROM mini_chapters WHERE id=?').bind(id).first();
+  if(!chapter)return json({error:'Chapter not found.'},404);
+  // Return the exact saved page template with the unsaved manuscript rendered into it.
+  // The browser preview uses srcdoc and allows same-origin images/styles but no scripts.
+  const template=chapter.page_html||'';
+  const matches=template.match(/<div class="manuscript"><\/div>/g)||[];
+  if(matches.length!==1)return json({error:'Chapter page template needs exactly one manuscript placeholder.'},409);
+  return json({html:template.replace('<div class="manuscript"></div>','<div class="manuscript">'+rendered+'</div>')});
+ }
  if(!['draft','publish','restore'].includes(input.action)||!Number.isSafeInteger(input.version))return json({error:'Invalid action or version.'},400);
  const chapter=await db.prepare('SELECT * FROM mini_chapters WHERE id=?').bind(id).first();
  if(!chapter)return json({error:'Chapter not found.'},404);
